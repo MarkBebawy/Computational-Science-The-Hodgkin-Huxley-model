@@ -1,0 +1,15 @@
+GABOR:
+Good! Careful wih the numerical method. You surely dont need both FDM and FEM, in this case they surve the very same purpose: to turn PDEs into algebraic equations that the computer can evaluate. I suggest IF you will need this, stick to FDM. I suspect when you start to implement this you will have questions. Dont hesitate to ask!
+
+GROEP 1:
+The ‘Scientific Question’ paragraph is mostly clear and well-explained, however it seems to be missing the problem context. This should also be added according to the project proposal template.
+The explanation of your simulation is clear and you explained your hypothesis well.
+You also explain how you are planning to validate your model, but you forgot to mention the way in which you intend to use your model. 
+The chosen method and programming language do satisfy the “Blue box” so no improvement needed there.
+Overall your project plan satisfies most of the template and it seems like a reasonable plan.
+
+GROEP 2:
+The section scientific question could be more shortened; it's a bit more than 350 words. The context of the scientific question is not entirely clear though. One can for example specify whether this models just applied to humans or also to animals. For the rest hypothesis and questions are clear.
+
+GROEP 3:
+Interesting proposal. Could you expand a bit on how you would implement a spatial component and if this could significantly alter your findings?  Differential equations typically are not very well suited to adding a spatial component. How do you plan to do this? (Cellular automata are often used to model systems where a spatial component is relevant, but I don't know if this is applicable to your area of research.
