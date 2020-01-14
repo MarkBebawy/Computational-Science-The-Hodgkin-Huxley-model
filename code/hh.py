@@ -32,36 +32,37 @@ class HodgkinHuxley:
         self.g_Na = 120
         self.g_K = 36
         self.g_L = 0.3
-        
+
         # Calculate factor for temperature correction which is used for opening and closing rates.
         self.phi = 3 ** ((T - 6.3) / 10)
         self.a_n = lambda V : self.phi * (0.01 * (V + 10) / (np.exp((V + 10)/10) - 1))
         self.a_m = lambda V : self.phi * (0.01 * (V + 25) / (np.exp((V + 25)/10) - 1))
-        self.a_h = lambda V : self.phi * (0.07 * np.exp(V/20))
+        self.a_h = lambda V : self.phi * 0.07 * np.exp(V/20)
         self.b_n = lambda V : self.phi * 0.125 * np.exp(V/80)
         self.b_m = lambda V : self.phi * 4 * np.exp(V/18)
         self.b_h = lambda V : self.phi / (np.exp((V + 30)/10) + 1)
+        self.I_L = lambda V : self.g_L * (V - self.V_L)
+        self.I_K = lambda V, n :  self.g_K * n ** 4 * (V - self.V_K)
+        self.I_Na = lambda V, m, h : self.g_Na * m ** 3 * h * (V - self.V_Na)
 
     def I(self, t):
         """Injected current as a function of time in nA. """
-        return 15
+        return 15 * (t < 0.003)
 
     def diff_eq(self):
-        """Returns function f such that the differential equations can be described as x' = f(t, x), 
+        """Returns function f such that the differential equations can be described as x' = f(t, x),
         where x = [V, n, m, h]. Note that the first argument is not used (rk4 requires f to be a function of time, but
         we do not need this)."""
         def f(t, x):
             V, n, m, h = x
             y = np.zeros(4)
-            y[0] = (self.I(t) - self.g_K * n ** 4 * (V - self.V_K)
-                           - self.g_Na * m ** 3 * (V - self.V_Na)
-                           - self.g_L * (V - self.V_L)) / self.C
+            y[0] = (self.I(t) - self.I_K(V, n) - self.I_Na(V, m, h) - self.I_L(V)) / self.C
             y[1] = self.a_n(V) * (1 - n) - self.b_n(V) * n
             y[2] = self.a_m(V) * (1 - m) - self.b_m(V) * m
             y[3] = self.a_h(V) * (1 - h) - self.b_h(V) * h
             return y
         return f
-    
+
     def solve_model(self, h, t):
         """Solves the model using RK4 with step size h, for time (at least) t."""
         N = np.int(np.ceil(t/h))
