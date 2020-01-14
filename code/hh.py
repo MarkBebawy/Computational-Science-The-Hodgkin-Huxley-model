@@ -2,6 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import tools
 
+from pyics import Model
+
 class HodgkinHuxley:
     """
     Class which stores parameters of HH model.
@@ -21,6 +23,7 @@ class HodgkinHuxley:
     """
     def __init__(self, T=6.3):
         """Initialises variables of model, takes temperature as input with T = 6.3 as standard temperature."""
+        Model.__init__(self)
         self.C = 1
         self.V0 = -65
         self.n0 = 0.317
@@ -35,7 +38,7 @@ class HodgkinHuxley:
         self.V_eq = -65
 
         # Calculate factor for temperature correction which is used for opening and closing rates.
-        self.phi = 3 ** ((T - 6.3) / 10)
+        self.phi = 3 ** ((self.temperature - 6.3) / 10)
         self.a_n = lambda V : self.phi * (0.01 * (-V + self.V_eq + 10) / (np.exp((-V + self.V_eq + 10)/10) - 1))
         self.a_m = lambda V : self.phi * (0.1 * (-V + self.V_eq + 25) / (np.exp((-V + self.V_eq + 25)/10) - 1))
         self.a_h = lambda V : self.phi * 0.07 * np.exp((-V + self.V_eq)/20)
@@ -46,11 +49,19 @@ class HodgkinHuxley:
         self.I_K = lambda V, n :  self.g_K * n ** 4 * (V - self.V_K)
         self.I_Na = lambda V, m, h : self.g_Na * m ** 3 * h * (V - self.V_Na)
 
+        # Set parameters that can be changed by GUI.
+        # TODO: Fix setters....
+        self.make_param('temperature', T, param_type=float, setter=lambda x: return (6.3 <= x and x < 50) * x)
+        self.make_param('run_time', 10, param_type=int, setter=lambda x: return (0 < x and x < 100) * x)
+        self.make_param('inject_current', 20, param_type=float, setter=lambda x: (0 < x and x < 150) * x)
+        self.make_param('inj_start_time', 0, param_type=int, setter=lambda x: (0 < x and x < self.run_time) * x)
+        self.make_param('inj_end_time', self.run_time, param_type=int, \
+            setter=lambda x: (self.inj_start_time < x and x < self.run_time) * x)
+
+
     def I(self, t):
         """Injected current as a function of time in nA/cm^2. """
-        # return 20
-        return 20 * (3 < t and t < 4)
-        # return 10*(t>100) - 10*(t>200) + 35*(t>300) - 35*(t>400)
+        return self.inject_current * (self.inj_start_time < t and t < self.inj_end_time)
 
 
     def diff_eq(self):
@@ -67,7 +78,7 @@ class HodgkinHuxley:
             return y
         return f
 
-    def solve_model(self, h, t, quick=False):
+    def solve_model(self, h, t=self.run_time, quick=False):
         """Solves the model using RK4 with step size h, for time (at least) t. If quick paramter is true then forwards Euler is used."""
         N = np.int(np.ceil(t/h))
         f = self.diff_eq()
