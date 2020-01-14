@@ -47,8 +47,8 @@ class HodgkinHuxley:
 
     def I(self, t):
         """Injected current as a function of time in nA/cm^2. """
-        return 20
-        # return 20 * (10 < t and t < 15)
+        # return 20
+        return 20 * (10 < t and t < 11)
         # return 10*(t>100) - 10*(t>200) + 35*(t>300) - 35*(t>400)
 
 
@@ -74,8 +74,7 @@ class HodgkinHuxley:
         sol = tools.rk4(f, 0, y0, h, N)
         return sol
 
-# Fix injected current!!!!
 x = HodgkinHuxley()
-t, y = x.solve_model(0.0001, 20)
+t, y = x.solve_model(0.0001, 40)
 plt.plot(t, y[:,0])
 plt.show()
