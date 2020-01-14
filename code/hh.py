@@ -21,7 +21,7 @@ class HodgkinHuxley:
     """
     def __init__(self, T=6.3):
         """Initialises variables of model, takes temperature as input with T = 6.3 as standard temperature."""
-        self.C = 0.1
+        self.C = 1
         self.V0 = -65
         self.n0 = 0.317
         self.m0 = 0.05
@@ -35,19 +35,22 @@ class HodgkinHuxley:
 
         # Calculate factor for temperature correction which is used for opening and closing rates.
         self.phi = 3 ** ((T - 6.3) / 10)
-        self.a_n = lambda V : self.phi * (0.01 * (V + 10) / (np.exp((V + 10)/10) - 1))
-        self.a_m = lambda V : self.phi * (0.01 * (V + 25) / (np.exp((V + 25)/10) - 1))
-        self.a_h = lambda V : self.phi * 0.07 * np.exp(V/20)
-        self.b_n = lambda V : self.phi * 0.125 * np.exp(V/80)
-        self.b_m = lambda V : self.phi * 4 * np.exp(V/18)
-        self.b_h = lambda V : self.phi / (np.exp((V + 30)/10) + 1)
+        self.a_n = lambda V : self.phi * (0.01 * (-V + 10) / (np.exp((-V + 10)/10) - 1))
+        self.a_m = lambda V : self.phi * (0.1 * (-V + 25) / (np.exp((-V + 25)/10) - 1))
+        self.a_h = lambda V : self.phi * 0.07 * np.exp(-V/20)
+        self.b_n = lambda V : self.phi * 0.125 * np.exp(-V/80)
+        self.b_m = lambda V : self.phi * 4 * np.exp(-V/18)
+        self.b_h = lambda V : self.phi / (np.exp((-V + 30)/10) + 1)
         self.I_L = lambda V : self.g_L * (V - self.V_L)
         self.I_K = lambda V, n :  self.g_K * n ** 4 * (V - self.V_K)
         self.I_Na = lambda V, m, h : self.g_Na * m ** 3 * h * (V - self.V_Na)
 
     def I(self, t):
-        """Injected current as a function of time in nA. """
-        return 15 * (t < 0.003)
+        """Injected current as a function of time in nA/cm^2. """
+        return 20
+        # return 0
+        # return 10*(t>100) - 10*(t>200) + 35*(t>300) - 35*(t>400)
+
 
     def diff_eq(self):
         """Returns function f such that the differential equations can be described as x' = f(t, x),
@@ -73,6 +76,6 @@ class HodgkinHuxley:
 
 # Fix injected current!!!!
 x = HodgkinHuxley()
-t, y = x.solve_model(0.0001, 10)
+t, y = x.solve_model(0.0001, 20)
 plt.plot(t, y[:,0])
 plt.show()
