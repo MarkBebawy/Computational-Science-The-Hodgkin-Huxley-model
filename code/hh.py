@@ -7,7 +7,7 @@ class HodgkinHuxley:
     Class which stores parameters of HH model.
 
     Attributes:
-    C: Membrane capacitance (mF/cm^2)
+    C: Membrane capacitance (uF/cm^2)
     I: Applied current, assumed constant (nA)
     V0: Applied voltage at starting time (mV)
     n0: Initial probability of K gate being open
@@ -16,8 +16,8 @@ class HodgkinHuxley:
     V_Na, v_K, v_L: Reverse potential of Na / K / leakage channel (mV)
     g_Na, g_K, g_L: Maximum Na / K / leakage conductance (mS/cm^2)
     phi: Factor for temperature correction
-    a_n, a_m, a_h: Opening rate of m, n, h gates (m/s)
-    b_n, b_m, b_h: Closing rate om m, n, h gates (m/s)
+    a_n, a_m, a_h: Opening rate of m, n, h gates (ms)^-1
+    b_n, b_m, b_h: Closing rate om m, n, h gates (ms)^-1
     """
     def __init__(self, T=6.3):
         """Initialises variables of model, takes temperature as input with T = 6.3 as standard temperature."""
@@ -35,12 +35,12 @@ class HodgkinHuxley:
 
         # Calculate factor for temperature correction which is used for opening and closing rates.
         self.phi = 3 ** ((T - 6.3) / 10)
-        self.a_n = lambda V : self.phi * (0.01 * (-V + 10) / (np.exp((-V + 10)/10) - 1))
-        self.a_m = lambda V : self.phi * (0.1 * (-V + 25) / (np.exp((-V + 25)/10) - 1))
-        self.a_h = lambda V : self.phi * 0.07 * np.exp(-V/20)
-        self.b_n = lambda V : self.phi * 0.125 * np.exp(-V/80)
-        self.b_m = lambda V : self.phi * 4 * np.exp(-V/18)
-        self.b_h = lambda V : self.phi / (np.exp((-V + 30)/10) + 1)
+        self.a_n = lambda V : self.phi * (0.01 * (-V -65 + 10) / (np.exp((-V -65 + 10)/10) - 1))
+        self.a_m = lambda V : self.phi * (0.1 * (-V -65 + 25) / (np.exp((-V -65 + 25)/10) - 1))
+        self.a_h = lambda V : self.phi * 0.07 * np.exp((-V - 65)/20)
+        self.b_n = lambda V : self.phi * 0.125 * np.exp((-V - 65)/80)
+        self.b_m = lambda V : self.phi * 4 * np.exp((-V-65)/18)
+        self.b_h = lambda V : self.phi / (np.exp(((-V-65) + 30)/10) + 1)
         self.I_L = lambda V : self.g_L * (V - self.V_L)
         self.I_K = lambda V, n :  self.g_K * n ** 4 * (V - self.V_K)
         self.I_Na = lambda V, m, h : self.g_Na * m ** 3 * h * (V - self.V_Na)
@@ -48,7 +48,7 @@ class HodgkinHuxley:
     def I(self, t):
         """Injected current as a function of time in nA/cm^2. """
         return 20
-        # return 0
+        # return 20 * (10 < t and t < 15)
         # return 10*(t>100) - 10*(t>200) + 35*(t>300) - 35*(t>400)
 
 

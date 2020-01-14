@@ -6,12 +6,12 @@ def rk4(f, t0, y0, h, N):
     m = len(y0)
     y = np.zeros((N+1, m))
     y[0] = y0
-    
+
     for n in range(N):
         k1 = f(t[n], y[n])
         k2 = f(t[n] + h/2, y[n] + k1 * h/2)
         k3 = f(t[n] + h/2, y[n] + k2 * h/2)
         k4 = f(t[n] + h, y[n] + k3 * h)
         y[n+1] = y[n] + h * (k1 + 2 * k2 + 2 * k3 + k4) / 6
-        
+
     return t, y
