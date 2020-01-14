@@ -15,3 +15,14 @@ def rk4(f, t0, y0, h, N):
         y[n+1] = y[n] + h * (k1 + 2 * k2 + 2 * k3 + k4) / 6
 
     return t, y
+
+def fe(f, t0, y0, h, N):
+    """"Solve IVP given by y' = f(t, y), y(t_0) = y_0 with step size h > 0, for N steps."""
+    t = t0 + np.array([i * h for i in range(N+1)])
+    m = len(y0)
+    y = np.zeros((N+1, m))
+    y[0] = y0
+
+    for n in range(N):
+        y[n+1] = y[n] + h*f(t[n], y[n])
+    return t, y
