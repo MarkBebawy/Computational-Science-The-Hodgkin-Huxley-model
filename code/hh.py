@@ -32,15 +32,16 @@ class HodgkinHuxley:
         self.g_Na = 120
         self.g_K = 36
         self.g_L = 0.3
+        self.V_eq = -65
 
         # Calculate factor for temperature correction which is used for opening and closing rates.
         self.phi = 3 ** ((T - 6.3) / 10)
-        self.a_n = lambda V : self.phi * (0.01 * (-V -65 + 10) / (np.exp((-V -65 + 10)/10) - 1))
-        self.a_m = lambda V : self.phi * (0.1 * (-V -65 + 25) / (np.exp((-V -65 + 25)/10) - 1))
-        self.a_h = lambda V : self.phi * 0.07 * np.exp((-V - 65)/20)
-        self.b_n = lambda V : self.phi * 0.125 * np.exp((-V - 65)/80)
-        self.b_m = lambda V : self.phi * 4 * np.exp((-V-65)/18)
-        self.b_h = lambda V : self.phi / (np.exp(((-V-65) + 30)/10) + 1)
+        self.a_n = lambda V : self.phi * (0.01 * (-V + self.V_eq + 10) / (np.exp((-V + self.V_eq + 10)/10) - 1))
+        self.a_m = lambda V : self.phi * (0.1 * (-V + self.V_eq + 25) / (np.exp((-V + self.V_eq + 25)/10) - 1))
+        self.a_h = lambda V : self.phi * 0.07 * np.exp((-V + self.V_eq)/20)
+        self.b_n = lambda V : self.phi * 0.125 * np.exp((-V + self.V_eq)/80)
+        self.b_m = lambda V : self.phi * 4 * np.exp((-V + self.V_eq)/18)
+        self.b_h = lambda V : self.phi / (np.exp(((-V + self.V_eq) + 30)/10) + 1)
         self.I_L = lambda V : self.g_L * (V - self.V_L)
         self.I_K = lambda V, n :  self.g_K * n ** 4 * (V - self.V_K)
         self.I_Na = lambda V, m, h : self.g_Na * m ** 3 * h * (V - self.V_Na)
@@ -66,16 +67,22 @@ class HodgkinHuxley:
             return y
         return f
 
-    def solve_model(self, h, t):
-        """Solves the model using RK4 with step size h, for time (at least) t."""
+    def solve_model(self, h, t, quick=False):
+        """Solves the model using RK4 with step size h, for time (at least) t. If quick paramter is true then forwards Euler is used."""
         N = np.int(np.ceil(t/h))
         f = self.diff_eq()
         y0 = np.array([self.V0, self.n0, self.m0, self.h0])
-        sol = tools.rk4(f, 0, y0, h, N)
+        if quick:
+            sol = tools.fe(f, 0, y0, h, N)
+        else:
+            sol = tools.rk4(f, 0, y0, h, N)
         return sol
 
 # Fix injected current!!!!
 x = HodgkinHuxley()
-t, y = x.solve_model(0.0001, 20)
-plt.plot(t, y[:,0])
+t, y = x.solve_model(0.0001, 20, True)
+plt.plot(t, y[:,0], label="FE")
+t, y = x.solve_model(0.0001, 20, False)
+plt.plot(t, y[:,0], label="RK4")
+plt.legend()
 plt.show()
