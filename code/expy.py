@@ -60,19 +60,27 @@ class TempExperiment:
         plt.ylabel(ylabel)
         plt.show()
     
-    def store_csv(file_name):
+    def store_csv(self, file_name):
         """Stores results in csv file."""
-        #TODO finish
-        pass
+        temperatures, ap_durations = self.results
+        with open(file_name, 'w', newline='') as csvfile:
+            writer = csv.writer(csvfile)
+            for t, ap in zip(temperatures, ap_durations):
+                writer.writerow([t, ap])
     
-    def load_csv(file_name):
+    def load_csv(self, file_name):
         """Loads results from csv file."""
-        #TODO finish
-        pass
-
+        temperatures = []
+        ap_durations = []
+        with open(file_name, newline='') as csvfile:
+            reader = csv.reader(csvfile)
+            for row in reader:
+                temperatures.append(float(row[0]))
+                ap_durations.append(float(row[1]))
+        self.results = (temperatures, ap_durations)
 
 TE = TempExperiment(quick=True)
-TE.run()
+TE.load_csv("testfile")
 TE.plot()
 plt.show()
         
