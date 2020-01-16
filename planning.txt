@@ -1,10 +1,10 @@
 MARK: GUI
 -> Run one action potential and show plot
 Want to be able to change:
-    done - Temperature
+    - Temperature
     - Use Euler or RK4 + size of time steps
-    done - How long to run
-    done - Amount of injected current (choice between constant current or injection of current at some time for some time?)
+    - How long to run
+    - Amount of injected current (choice between constant current or injection of current at some time for some time?)
 
 -> Run temperature experiments
 Want to be able to change:
