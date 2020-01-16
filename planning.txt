@@ -1,0 +1,23 @@
+MARK: GUI
+-> Run one action potential and show plot
+Want to be able to change:
+    done - Temperature
+    - Use Euler or RK4 + size of time steps
+    done - How long to run
+    done - Amount of injected current (choice between constant current or injection of current at some time for some time?)
+
+-> Run temperature experiments
+Want to be able to change:
+    - Which temperatures (min, max, amount)
+    - Use Euler or RK4 + size of time steps
+    - Tolerance for resting potential
+    - Runtime per experiment
+    - Amount of injected current (...)
+
+JIM: EXPERIMENTS
+-> Find pique value and duration of one action potential (including polarisation, depolarisation & hyperpolarisation phases)
+-> A way to store results (.csv file?)
+-> Plotting functions
+-> Communicate with Mark as to which features are needed in the testing function
+
+LUCAS: EXTENSION OF MODEL
