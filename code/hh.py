@@ -37,8 +37,8 @@ class HodgkinHuxley:
         # Set parameters that can be changed by GUI.
         self.run_time = 10
         self.inject_current = 20
-        self.inj_start_time = 0
-        self.inj_end_time = self.run_time
+        self.inj_start_time = 3
+        self.inj_end_time = 4
         self.quick = False
         self.num_method_time_steps = 0.0001
 
@@ -51,7 +51,7 @@ class HodgkinHuxley:
         self.min_temp = 6.3
         self.max_temp = 46.3
         self.amount_temp_range = 10
-        self.rest_potential_eps = 10
+        self.rest_potential_eps = 1
 
         # Calculate factor for temperature correction which is used for opening and closing rates.
         self.phi = 3 ** ((self.temperature - 6.3) / 10)
@@ -73,11 +73,9 @@ class HodgkinHuxley:
         # self.make_param('inj_end_time', self.run_time, param_type=int, \
         #     setter=lambda x: (self.inj_start_time < x and x < self.run_time) * x)
 
-
     def I(self, t):
         """Injected current as a function of time in nA/cm^2. """
         return self.inject_current * (self.inj_start_time < t and t < self.inj_end_time)
-
 
     def diff_eq(self):
         """Returns function f such that the differential equations can be described as x' = f(t, x),
@@ -94,7 +92,7 @@ class HodgkinHuxley:
         return f
 
     def set_temperature(self, T):
-        """This function changes the temperature for the model."""
+        """Setter for the temperature of the model."""
         # TODO: restricties op T? Meer DRY manier om dit te doen?
         self.temperature = T
         self.phi = 3 ** ((self.temperature - 6.3) / 10)
@@ -107,6 +105,29 @@ class HodgkinHuxley:
         self.I_L = lambda V : self.g_L * (V - self.V_L)
         self.I_K = lambda V, n :  self.g_K * n ** 4 * (V - self.V_K)
         self.I_Na = lambda V, m, h : self.g_Na * m ** 3 * h * (V - self.V_Na)
+
+    def set_run_time(self, time):
+        """Setter for the run time of the model."""
+        self.run_time = time
+
+    def set_injection_data(self, inj_current, inj_start, inj_end):
+        """Setter for inject_current, inj_start_time, inj_end_time."""
+        self.inject_current = inj_current
+        self.inj_start_time = inj_start
+        self.inj_end_time = inj_end
+
+    def set_num_method(self, quick, steps):
+        """Setter for numerical method (quick=False --> RK4, quick=True --> Forward Euler)
+        and for time steps used by that method."""
+        self.quick = quick
+        self.num_method_time_steps = steps
+
+    def set_temp_exp_data(self, min_temp, max_temp, temp_steps, eps):
+        """Setter for min_temp, max_temp, amount_temp_range, and rest_potential_eps."""
+        self.min_temp = min_temp
+        self.max_temp = max_temp
+        self.amount_temp_range = temp_steps
+        self.rest_potential_eps = eps
 
     def solve_model(self, h=None, t=None, quick=None):
         """Solves the model using RK4 with step size h, for time (at least) t. If quick paramter is true then forwards Euler is used."""

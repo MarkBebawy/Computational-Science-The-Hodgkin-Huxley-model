@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import hh
 
-def speedTemperature():
+def speedTemperature(x=hh.HodgkinHuxley()):
     """This function runs the Hodgkin-Huxley model for different temperatures
     and measures the time it takes to finish a single action potential.
 
@@ -10,7 +10,6 @@ def speedTemperature():
     - eps: error marigin around -65 mV such that [-65 - eps, -65 + eps]
            is accepted as resting potential.
     """
-    x = hh.HodgkinHuxley()
     temperatures = np.linspace(x.min_temp, x.max_temp, x.amount_temp_range)
     ap_times = list()
     for T in temperatures:
@@ -22,9 +21,11 @@ def speedTemperature():
             if -65 - eps < v and v < -65 + eps and t[index] > 4:
                 ap_times.append(t[index])
                 break
-            print(f"WARNING: Did not find repolarisation for {T} degrees")
+            if index == len(volts) - 1:
+                print(f"WARNING: Did not find repolarisation for {T} degrees")
     return temperatures, ap_times
 
-temperatures, ap_times = speedTemperature()
-plt.plot(temperatures, ap_times)
-plt.show()
+if __name__ == "__main__":
+    temperatures, ap_times = speedTemperature()
+    plt.plot(temperatures, ap_times)
+    plt.show()

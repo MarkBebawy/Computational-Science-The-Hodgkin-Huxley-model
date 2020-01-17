@@ -2,8 +2,18 @@
 # for the model. The code is inspired by the tutorial
 # which can be found on:
 # https://www.python-course.eu/tkinter_entry_widgets.php.
+#
+# TODO: Ideas:
+#           - Default values in entry widgets
+#           - Reset button to use default values
+#           - Opmaak
+#           - Restrict values in entry widgets
+#           - Pijltjes in text widget for increase/decrease
+#           - Only allow certain types in widgets (+setter for range).
 
 import tkinter as tk
+import expy
+import hh
 
 def setup_start():
     """This function makes a screen, adds all labels, entry
@@ -51,5 +61,12 @@ def setup_start():
 
     return screen, entry_widgets
 
-screen, entry_widgets = setup_start()
-screen.mainloop()
+
+def mainloop():
+    """This function sets up a screen, handles all variables and
+    calls the appropriate functions when buttons are pressed."""
+    screen, entry_widgets = setup_start()
+    screen.mainloop()
+
+if __name__ == "__main__":
+    mainloop()
