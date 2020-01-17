@@ -17,7 +17,7 @@ import hh
 
 def setup_start():
     """This function makes a screen, adds all labels, entry
-    widgets and text buttons and returns the screen and the entry
+    widgets and returns the screen and the entry
     widgets."""
     screen = tk.Tk()
     welcome_str = ("Welcome to the Hodgkin-Huxley GUI.\nOption 1: One action potential "
@@ -53,19 +53,29 @@ def setup_start():
     variable_rows = [i for i in range(num_rows) if i not in title_rows]
 
     # Make a list of entry widgets.
+    # XXX: default values.
     entry_widgets = list()
+    default_values = ['20', '3', '4', '0', '0.0001', '6.3', '10', '6.3', '46.3', '10', '10', '10']
 
     for indx, row in enumerate(variable_rows):
         entry_widgets.append(tk.Entry(screen))
         entry_widgets[indx].grid(row=row, column=1)
+        entry_widgets[indx].insert("end", default_values[indx])
 
-    return screen, entry_widgets
+    return screen, entry_widgets, num_rows
 
 
 def mainloop():
     """This function sets up a screen, handles all variables and
-    calls the appropriate functions when buttons are pressed."""
-    screen, entry_widgets = setup_start()
+    calls the appropriate functions when buttons are pressed. It
+    also creates these buttons."""
+    screen, entry_widgets, num_rows = setup_start()
+
+    # Create buttons
+    tk.Button(screen, text='Quit', command=screen.quit).grid(row=num_rows, column=0)
+    tk.Button(screen, text='Simulate action potential', command="").grid(row=num_rows, column=1)
+    tk.Button(screen, text='Run temperature experiments', command="").grid(row=num_rows, column=2)
+
     screen.mainloop()
 
 if __name__ == "__main__":
