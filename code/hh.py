@@ -2,8 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import tools
 
-from pyics import Model
-
 class HodgkinHuxley:
     """
     Class which stores parameters of HH model.
@@ -23,7 +21,6 @@ class HodgkinHuxley:
     """
     def __init__(self, T=6.3):
         """Initialises variables of model, takes temperature as input with T = 6.3 as standard temperature."""
-        Model.__init__(self)
         self.C = 1
         self.V0 = -65
         self.n0 = 0.317
@@ -37,6 +34,25 @@ class HodgkinHuxley:
         self.g_L = 0.3
         self.V_eq = -65
 
+        # Set parameters that can be changed by GUI.
+        self.run_time = 10
+        self.inject_current = 20
+        self.inj_start_time = 0
+        self.inj_end_time = self.run_time
+        self.quick = False
+        self.num_method_time_steps = 0.0001
+
+        # Set parameters that can be changed by GUI and are meant for simulating
+        # one aciton potential.
+        self.temperature = T
+
+        # Set parameters that can be changed by GUI and are meant for running
+        # temperature experiments.
+        self.min_temp = 6.3
+        self.max_temp = 46.3
+        self.amount_temp_range = 10
+        self.rest_potential_eps = 10
+
         # Calculate factor for temperature correction which is used for opening and closing rates.
         self.phi = 3 ** ((self.temperature - 6.3) / 10)
         self.a_n = lambda V : self.phi * (0.01 * (-V + self.V_eq + 10) / (np.exp((-V + self.V_eq + 10)/10) - 1))
@@ -49,14 +65,13 @@ class HodgkinHuxley:
         self.I_K = lambda V, n :  self.g_K * n ** 4 * (V - self.V_K)
         self.I_Na = lambda V, m, h : self.g_Na * m ** 3 * h * (V - self.V_Na)
 
-        # Set parameters that can be changed by GUI.
-        # TODO: Fix setters....
-        self.make_param('temperature', T, param_type=float, setter=lambda x: return (6.3 <= x and x < 50) * x)
-        self.make_param('run_time', 10, param_type=int, setter=lambda x: return (0 < x and x < 100) * x)
-        self.make_param('inject_current', 20, param_type=float, setter=lambda x: (0 < x and x < 150) * x)
-        self.make_param('inj_start_time', 0, param_type=int, setter=lambda x: (0 < x and x < self.run_time) * x)
-        self.make_param('inj_end_time', self.run_time, param_type=int, \
-            setter=lambda x: (self.inj_start_time < x and x < self.run_time) * x)
+        # TODO: Fix/use setters and remove these comments....
+        # self.make_param('temperature', T, param_type=float, setter=lambda x: return (6.3 <= x and x < 50) * x)
+        # self.make_param('run_time', 10, param_type=int, setter=lambda x: return (0 < x and x < 100) * x)
+        # self.make_param('inject_current', 20, param_type=float, setter=lambda x: (0 < x and x < 150) * x)
+        # self.make_param('inj_start_time', 0, param_type=int, setter=lambda x: (0 < x and x < self.run_time) * x)
+        # self.make_param('inj_end_time', self.run_time, param_type=int, \
+        #     setter=lambda x: (self.inj_start_time < x and x < self.run_time) * x)
 
 
     def I(self, t):
@@ -78,8 +93,31 @@ class HodgkinHuxley:
             return y
         return f
 
-    def solve_model(self, h, t=self.run_time, quick=False):
+    def set_temperature(self, T):
+        """This function changes the temperature for the model."""
+        # TODO: restricties op T? Meer DRY manier om dit te doen?
+        self.temperature = T
+        self.phi = 3 ** ((self.temperature - 6.3) / 10)
+        self.a_n = lambda V : self.phi * (0.01 * (-V + self.V_eq + 10) / (np.exp((-V + self.V_eq + 10)/10) - 1))
+        self.a_m = lambda V : self.phi * (0.1 * (-V + self.V_eq + 25) / (np.exp((-V + self.V_eq + 25)/10) - 1))
+        self.a_h = lambda V : self.phi * 0.07 * np.exp((-V + self.V_eq)/20)
+        self.b_n = lambda V : self.phi * 0.125 * np.exp((-V + self.V_eq)/80)
+        self.b_m = lambda V : self.phi * 4 * np.exp((-V + self.V_eq)/18)
+        self.b_h = lambda V : self.phi / (np.exp(((-V + self.V_eq) + 30)/10) + 1)
+        self.I_L = lambda V : self.g_L * (V - self.V_L)
+        self.I_K = lambda V, n :  self.g_K * n ** 4 * (V - self.V_K)
+        self.I_Na = lambda V, m, h : self.g_Na * m ** 3 * h * (V - self.V_Na)
+
+    def solve_model(self, h=None, t=None, quick=None):
         """Solves the model using RK4 with step size h, for time (at least) t. If quick paramter is true then forwards Euler is used."""
+        # Default values for parameters.
+        if h is None:
+            h = self.num_method_time_steps
+        if t is None:
+            t = self.run_time
+        if quick is None:
+            quick = self.quick
+
         N = np.int(np.ceil(t/h))
         f = self.diff_eq()
         y0 = np.array([self.V0, self.n0, self.m0, self.h0])

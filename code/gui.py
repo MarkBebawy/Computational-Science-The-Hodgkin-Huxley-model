@@ -10,8 +10,8 @@ def setup_start():
     widgets and text buttons and returns the screen and the entry
     widgets."""
     screen = tk.Tk()
-    welcome_str = ("Welcome to the Hodgkin-Huxley GUI.\nOption 1: One action potential"
-        "can be simulated and plotted.\nOption 2: Temperature experiments"
+    welcome_str = ("Welcome to the Hodgkin-Huxley GUI.\nOption 1: One action potential "
+        "can be simulated and plotted.\nOption 2: Temperature experiments "
         "can be run.\n\nGeneral options")
     tk.Label(screen, text=welcome_str).grid(row=0)
 
@@ -35,9 +35,10 @@ def setup_start():
     tk.Label(screen, text="Maximum temperature (degrees celsius)").grid(row=11)
     tk.Label(screen, text="Amount of experiments points in temperature range").grid(row=12)
     tk.Label(screen, text="Tolerance for resting potential").grid(row=13)
+    tk.Label(screen, text="Run time per experiment (miliseconds)").grid(row=14)
 
     # XXX: Change this if variables are changed.
-    num_rows = 14
+    num_rows = 15
     title_rows = [0, 6, 9]
     variable_rows = [i for i in range(num_rows) if i not in title_rows]
 
