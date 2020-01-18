@@ -82,7 +82,7 @@ def make_entries(screen, keys, settings, defaults):
     for i, setting in enumerate(settings):
         row = tk.Frame(screen)
         label = tk.Label(row, width=50, text=setting)
-        entry = tk.Entry(row, validate="focusout")
+        entry = tk.Entry(row)
         entry.insert(0, defaults[i])
 
         row.pack(side=tk.TOP, fill=tk.X)
