@@ -2,20 +2,11 @@
 # for the model. The code is inspired by the tutorial
 # which can be found on:
 # https://www.python-course.eu/tkinter_entries.php.
-#
-# TODO: Ideas:
-#           - Default values in entry widgets
-#           - Reset button to use default values
-#           - Opmaak
-#           - Restrict values & types in entry widgets
-#           - Pijltjes in text widget for increase/decrease
-#           - Only allow certain types in widgets (+setter for range).
 
 import tkinter as tk
 import matplotlib.pyplot as plt
 import expy
 import hh
-
 
 ########### Entry validation functions ################
 class Validation:
@@ -28,53 +19,53 @@ class Validation:
         except ValueError:
             return False
 
-    def inj_current_val(value, action='-1'):
+    def inj_current_val(value):
         """This function validates the input of the injected current entry."""
         return Validation.is_float(value) and 0 <= float(value) and float(value) <= 150
 
-    def inj_start_val(value,  action='-1'):
+    def inj_start_val(value):
         """This function validates the input of the start time current injection entry."""
         return value.isdigit() and 0 <= int(value)
 
-    def inj_end_val(value,  action='-1'):
+    def inj_end_val(value):
         """This function validates the input of the end time for current injection entry."""
         return value.isdigit() and 0 <= int(value)
 
-    def quick_val(value,  action='-1'):
+    def quick_val(value):
         """This function validates the input of the 'quick' entry."""
         return value.isdigit() and (int(value) == 0 or int(value) == 1)
 
-    def num_method_steps_val(value,  action='-1'):
+    def num_method_steps_val(value):
         """This function validates the input of the size of time steps for numerical method entry."""
         return Validation.is_float(value) and 0 < float(value) and float(value) <= 10
 
     ## Option 1
-    def temp_val(value,  action='-1'):
+    def temp_val(value):
         """This function validates the temperature entry."""
         return Validation.is_float(value) and -60 <= float(value) and float(value) <= 60
 
-    def run_time1_val(value,  action='-1'):
+    def run_time1_val(value):
         """This function validates the run time entry."""
         return value.isdigit() and 0 < int(value) and int(value) <= 100
 
     ## Option 2
-    def min_temp_val(value,  action='-1'):
+    def min_temp_val(value):
         """This function validates the minimum temperature entry."""
-        return Validation.temp_val(value, action)
+        return Validation.temp_val(value)
 
-    def max_temp_val(value,   action='-1'):
+    def max_temp_val(value):
         """This function validates the maximum temperature entry."""
-        return Validation.temp_val(value, action)
+        return Validation.temp_val(value)
 
-    def temp_steps_val(value,   action='-1'):
+    def temp_steps_val(value):
         """This function validates the input of the amount of experiments points entry."""
         return value.isdigit() and 0 < int(value) and int(value) <= 20
 
-    def rest_pot_eps_val(value,   action='-1'):
+    def rest_pot_eps_val(value):
         """This function validates the input of the tolerance for resting potential entry."""
         return Validation.is_float(value) and 0 < float(value) and float(value) <= 15
 
-    def run_time2_val(value,  action='-1'):
+    def run_time2_val(value):
         """This function validates the input of the run time (option 2) entry."""
         return value.isdigit() and 0 < int(value) and int(value) <= 10
 ########### -------------------------- ################
@@ -92,11 +83,6 @@ def make_entries(screen, keys, settings, defaults):
         row = tk.Frame(screen)
         label = tk.Label(row, width=50, text=setting)
         entry = tk.Entry(row, validate="focusout")
-
-        # Define validation function
-        # FIXME: Empty window when validatecommand returns False.
-        func = keys[i] + "_val"
-        entry['validatecommand'] = (entry.register(getattr(Validation, func)), '%P', '%d')
         entry.insert(0, defaults[i])
 
         row.pack(side=tk.TOP, fill=tk.X)
@@ -135,7 +121,7 @@ def setup_start(screen):
     welcome_str = ("Welcome to the Hodgkin-Huxley GUI.\n\nOption 1: One action potential "
         "can be simulated and plotted.\nOption 2: Temperature experiments "
         "can be run.\n\nWhen running either option, the variables of\nthe other option will be ignored.\n"
-        "On wrong input, the text entry will be emptied."
+        "On wrong input, no simulation will run.\nSee terminal for how to fix this."
         "\n\n\nGeneral options")
 
     tk.Label(screen, text=welcome_str, font='bold').pack(side=tk.TOP)
@@ -158,10 +144,32 @@ def setup_start(screen):
 def sim_AP(entries_gen, entries_op1):
     """This function simulates an action potential and shows a plot, using
     the parameters entered by the user."""
-    print("Simulating one action potential. This could take some time...")
     model = hh.HodgkinHuxley()
+    valid = True
 
-    try:
+    # For every general entry, get value and validate.
+    for entry in entries_gen:
+        validate_func = entry + "_val"
+
+        # If invalid input print error and set valid False, such that the simulation
+        # won't be run.
+        if not getattr(Validation, validate_func)(entries_gen[entry].get()):
+            print(f"ERROR: Entry {entry} contains invalid input.\nWon't run simulation.")
+            valid = False
+
+    # For every option specific entry, get value and validate.
+    for entry in entries_op1:
+        validate_func = entry + "_val"
+
+        # If invalid input print error and set valid False, such that the simulation
+        # won't be run.
+        if not getattr(Validation, validate_func)(entries_op1[entry].get()):
+            print(f"ERROR: Entry {entry} contains invalid input.\nWon't run simulation.")
+            valid = False
+
+    if valid:
+        print("Simulating one action potential. This could take some time...")
+
         # Set parameters
         model.set_injection_data(float(entries_gen['inj_current'].get()), int(entries_gen['inj_start'].get()),
                                 int(entries_gen['inj_end'].get()))
@@ -173,17 +181,38 @@ def sim_AP(entries_gen, entries_op1):
         t, y = model.solve_model()
         plt.plot(t, y[:,0])
         plt.show()
-    except ValueError:
-        print("Please fill all relevant entry widgets")
+    print("------------------------------------------------------")
 
 
 def sim_temp(entries_gen, entries_op2):
     """This function runs the temperature experiments and shows a plot,
     using the parameters enterded by the user."""
-    print("Running temperature experiments. This could take some time...")
     model = hh.HodgkinHuxley()
+    valid = True
 
-    try:
+    # For every general entry, get value and validate.
+    for entry in entries_gen:
+        validate_func = entry + "_val"
+
+        # If invalid input print error and set valid False, such that the simulation
+        # won't be run.
+        if not getattr(Validation, validate_func)(entries_gen[entry].get()):
+            print(f"ERROR: Entry {entry} contains invalid input.\nWon't run simulation.")
+            valid = False
+
+    # For every option specific entry, get value and validate.
+    for entry in entries_op2:
+        validate_func = entry + "_val"
+
+        # If invalid input print error and set valid False, such that the simulation
+        # won't be run.
+        if not getattr(Validation, validate_func)(entries_op2[entry].get()):
+            print(f"ERROR: Entry {entry} contains invalid input.\nWon't run simulation.")
+            valid = False
+
+    if valid:
+        print("Running temperature experiments. This could take some time...")
+
         # Set parameters
         model.set_injection_data(float(entries_gen['inj_current'].get()), int(entries_gen['inj_start'].get()),
                                 int(entries_gen['inj_end'].get()))
@@ -195,8 +224,7 @@ def sim_temp(entries_gen, entries_op2):
         # Simulate model and show plot.
         temps, ap_times = expy.speedTemperature(model)
         expy.plot(temps, ap_times)
-    except ValueError:
-        print("Please fill all relevant entry widgets")
+    print("------------------------------------------------------")
 
 
 def mainloop():
