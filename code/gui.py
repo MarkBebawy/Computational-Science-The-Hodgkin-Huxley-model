@@ -28,59 +28,57 @@ class Validation:
         except ValueError:
             return False
 
-    def inj_current_val(value, action):
+    def inj_current_val(value, action='-1'):
         """This function validates the input of the injected current entry."""
-        # action == -1 on focusout
-        return action == -1 and Validation.is_float(value) and 0 <= float(value) and float(value) <= 150
+        return Validation.is_float(value) and 0 <= float(value) and float(value) <= 150
 
-    def inj_start_val(value, action):
+    def inj_start_val(value,  action='-1'):
         """This function validates the input of the start time current injection entry."""
-        return action == -1 and value.isdigit() and 0 <= int(value)
+        return value.isdigit() and 0 <= int(value)
 
-    def inj_end_val(value, action):
+    def inj_end_val(value,  action='-1'):
         """This function validates the input of the end time for current injection entry."""
-        return action == -1 and value.isdigit() and 0 <= int(value)
+        return value.isdigit() and 0 <= int(value)
 
-    def quick_val(value, action):
+    def quick_val(value,  action='-1'):
         """This function validates the input of the 'quick' entry."""
-        return action == -1 and value.isdigit() and (int(value) == 0 or int(value) == 1)
+        return value.isdigit() and (int(value) == 0 or int(value) == 1)
 
-    def num_method_steps_val(value, action):
+    def num_method_steps_val(value,  action='-1'):
         """This function validates the input of the size of time steps for numerical method entry."""
-        return action == -1 and Validation.is_float(value) and 0 < float(value) and float(value) < 10
+        return Validation.is_float(value) and 0 < float(value) and float(value) <= 10
 
     ## Option 1
-    def temp_val(value, action):
+    def temp_val(value,  action='-1'):
         """This function validates the temperature entry."""
-        return action == -1 and Validation.is_float(value) and -60 <= float(value) and float(value) <= 60
+        return Validation.is_float(value) and -60 <= float(value) and float(value) <= 60
 
-    def run_time1_val(value, action):
+    def run_time1_val(value,  action='-1'):
         """This function validates the run time entry."""
-        return action == -1 and value.isdigit() and 0 < int(value) and int(value) < 300
+        return value.isdigit() and 0 < int(value) and int(value) <= 100
 
     ## Option 2
-    def min_temp_val(value, action):
+    def min_temp_val(value,  action='-1'):
         """This function validates the minimum temperature entry."""
-        return True
+        return Validation.temp_val(value, action)
 
-    def max_temp_val(value, action):
+    def max_temp_val(value,   action='-1'):
         """This function validates the maximum temperature entry."""
-        return True
+        return Validation.temp_val(value, action)
 
-    def temp_steps_val(value, action):
+    def temp_steps_val(value,   action='-1'):
         """This function validates the input of the amount of experiments points entry."""
-        return True
+        return value.isdigit() and 0 < int(value) and int(value) <= 20
 
-    def rest_pot_eps_val(value, action):
+    def rest_pot_eps_val(value,   action='-1'):
         """This function validates the input of the tolerance for resting potential entry."""
-        return True
+        return Validation.is_float(value) and 0 < float(value) and float(value) <= 15
 
-    def run_time2_val(value, action):
+    def run_time2_val(value,  action='-1'):
         """This function validates the input of the run time (option 2) entry."""
-        return Validation.run_time1_val(value, action)
+        return value.isdigit() and 0 < int(value) and int(value) <= 10
 ########### -------------------------- ################
 
-valid = Validation()
 
 def make_entries(screen, keys, settings, defaults):
     """This function makes entries with labels from settings and default
@@ -95,7 +93,8 @@ def make_entries(screen, keys, settings, defaults):
         label = tk.Label(row, width=50, text=setting)
         entry = tk.Entry(row, validate="focusout")
 
-        # Define validation function.
+        # Define validation function
+        # FIXME: Empty window when validatecommand returns False.
         func = keys[i] + "_val"
         entry['validatecommand'] = (entry.register(getattr(Validation, func)), '%P', '%d')
         entry.insert(0, defaults[i])
@@ -115,11 +114,13 @@ def setup_start(screen):
     # Strings for all fields.
     settings_general = ["Amount of injected current (range 0 - 150)", "Start time for current injection",
         "End time for current injection", "Numerical method (RK4=0, Forw. Euler=1)",
-        "Size of time steps for numerical method"]
-    settings_op1 = ["Temperature (degrees celsius)", "Run time (miliseconds)"]
-    settings_op2 = ["Minimum temperature (degrees celsius)", "Maximum temperature (degrees celsius)",
-        "Amount of experiments points in temperature range", "Tolerance for resting potential",
-        "Run time per experiment (miliseconds)"]
+        "Size of time steps for numerical method (in interval (0, 10])"]
+    settings_op1 = ["Temperature (degrees celsius, interval [-60, 60])", "Run time (miliseconds, interval (0, 100])"]
+    settings_op2 = ["Minimum temperature (degrees celsius, interval [-60, 60])",
+        "Maximum temperature (degrees celsius, interval [-60, 60])",
+        "Amount of experiments points in temperature range, integer between 1 and 20",
+        "Tolerance for resting potential, interval (0, 15]",
+        "Run time per experiment (miliseconds, interval (0, 10])"]
 
     # Keys for all fields.
     keys_general = ["inj_current", "inj_start", "inj_end", "quick", "num_method_steps"]
@@ -160,9 +161,8 @@ def sim_AP(entries_gen, entries_op1):
     print("Simulating one action potential. This could take some time...")
     model = hh.HodgkinHuxley()
 
-    # Set parameters
-    # TODO: controleer input, bool(1) = True, bool(0) = False.
     try:
+        # Set parameters
         model.set_injection_data(float(entries_gen['inj_current'].get()), int(entries_gen['inj_start'].get()),
                                 int(entries_gen['inj_end'].get()))
         model.set_num_method(bool(entries_gen['quick'].get()), float(entries_gen['num_method_steps'].get()))
@@ -207,11 +207,10 @@ def mainloop():
     entries_gen, entries_op1, entries_op2 = setup_start(screen)
 
     # Create buttons
-    # TODO: controleer waarden.
     tk.Button(screen, text='Quit', command=screen.quit).pack(side=tk.LEFT, padx=5, pady=5)
-    tk.Button(screen, text='Simulate action potential',
+    tk.Button(screen, text='Option 1\nSimulate action potential',
         command=(lambda e1=entries_gen, e2=entries_op1: sim_AP(e1, e2))).pack(side=tk.LEFT, padx=5, pady=5)
-    tk.Button(screen, text='Run temperature experiments',
+    tk.Button(screen, text='Option 2\nRun temperature experiments',
         command=(lambda e1=entries_gen, e2=entries_op2: sim_temp(e1, e2))).pack(side=tk.LEFT, padx=5, pady=5)
 
     screen.mainloop()
