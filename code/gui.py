@@ -100,11 +100,11 @@ def setup_start(screen):
     # Strings for all fields.
     settings_general = ["Amount of injected current (range 0 - 150)", "Start time for current injection",
         "End time for current injection", "Numerical method (RK4=0, Forw. Euler=1)",
-        "Size of time steps for numerical method (in interval (0, 10])"]
+        "Size of time steps for\nnumerical method (in interval (0, 10])"]
     settings_op1 = ["Temperature (degrees celsius, interval [-60, 60])", "Run time (miliseconds, interval (0, 100])"]
-    settings_op2 = ["Minimum temperature (degrees celsius, interval [-60, 60])",
-        "Maximum temperature (degrees celsius, interval [-60, 60])",
-        "Amount of experiments points in temperature range, integer between 1 and 20",
+    settings_op2 = ["Minimum temperature (celsius, interval [-60, 60])",
+        "Maximum temperature (celsius, interval [-60, 60])",
+        "Amount of experiments points in\ntemperature range, integer between 1 and 20",
         "Tolerance for resting potential, interval (0, 15]",
         "Run time per experiment (miliseconds, interval (0, 10])"]
 
