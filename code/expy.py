@@ -11,8 +11,10 @@ def speedTemperature(x=hh.HodgkinHuxley()):
            is accepted as resting potential.
     """
     temperatures = np.linspace(x.min_temp, x.max_temp, x.amount_temp_range)
+    print(f"Running action potential for temperatures: {temperatures}")
     ap_times = list()
     for T in temperatures:
+        print(f"Running {T} degrees...")
         x.set_temperature(T)
         eps = x.rest_potential_eps
         t, y = x.solve_model()
@@ -24,6 +26,13 @@ def speedTemperature(x=hh.HodgkinHuxley()):
             if index == len(volts) - 1:
                 print(f"WARNING: Did not find repolarisation for {T} degrees")
     return temperatures, ap_times
+
+
+def plot(x, y):
+    """Plot y against x."""
+    plt.plot(x, y)
+    plt.show()
+
 
 if __name__ == "__main__":
     temperatures, ap_times = speedTemperature()

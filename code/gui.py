@@ -89,7 +89,7 @@ def sim_AP(entries_gen, entries_op1):
     print("Simulating one action potential. This could take some time...")
     model = hh.HodgkinHuxley()
 
-    # Set general parameters
+    # Set parameters
     # TODO: controleer input, bool(1) = True, bool(0) = False.
     model.set_injection_data(float(entries_gen['inj_current'].get()), int(entries_gen['inj_start'].get()),
                              int(entries_gen['inj_end'].get()))
@@ -97,9 +97,29 @@ def sim_AP(entries_gen, entries_op1):
     model.set_temperature(float(entries_op1['temp'].get()))
     model.set_run_time(int(entries_op1['run_time1'].get()))
 
+    # Simulate model and show plot.
     t, y = model.solve_model()
     plt.plot(t, y[:,0])
     plt.show()
+
+
+def sim_temp(entries_gen, entries_op2):
+    """This function runs the temperature experiments and shows a plot,
+    using the parameters enterded by the user."""
+    print("Running temperature experiments. This could take some time...")
+    model = hh.HodgkinHuxley()
+
+    # Set parameters
+    model.set_injection_data(float(entries_gen['inj_current'].get()), int(entries_gen['inj_start'].get()),
+                             int(entries_gen['inj_end'].get()))
+    model.set_num_method(bool(entries_gen['quick'].get()), float(entries_gen['num_method_steps'].get()))
+    model.set_temp_exp_data(float(entries_op2['min_temp'].get()), float(entries_op2['max_temp'].get()),
+                            int(entries_op2['temp_steps'].get()), float(entries_op2['rest_pot_eps'].get()))
+    model.set_run_time(int(entries_op2['run_time2'].get()))
+
+    # Simulate model and show plot.
+    temps, ap_times = expy.speedTemperature(model)
+    expy.plot(temps, ap_times)
 
 
 def mainloop():
@@ -114,7 +134,8 @@ def mainloop():
     tk.Button(screen, text='Quit', command=screen.quit).pack(side=tk.LEFT, padx=5, pady=5)
     tk.Button(screen, text='Simulate action potential',
         command=(lambda e1=entries_gen, e2=entries_op1: sim_AP(e1, e2))).pack(side=tk.LEFT, padx=5, pady=5)
-    tk.Button(screen, text='Run temperature experiments', command="").pack(side=tk.LEFT, padx=5, pady=5)
+    tk.Button(screen, text='Run temperature experiments',
+        command=(lambda e1=entries_gen, e2=entries_op2: sim_temp(e1, e2))).pack(side=tk.LEFT, padx=5, pady=5)
 
     screen.mainloop()
 
