@@ -49,7 +49,7 @@ class HodgkinHuxley:
     def I(self, t):
         """Injected current as a function of time in nA/cm^2. """
         # return 20
-        return 20 * (1 < t and t < 1.5) + 20*(t>15.5 and t < 16)
+        return 20 * (1 < t and t < 1.5) + 100*(t>10.5 and t < 11)
         # return 10*(t>100) - 10*(t>200) + 35*(t>300) - 35*(t>400)
 
 
