@@ -19,19 +19,27 @@ class CurrentParameters:
         self.start_time = start_time
 
     def genCurrent(self):
-        """Return a current function normaly with distributed time and strength"""
+        """Return a current function normaly with distributed time and strength."""
         strength = np.random.normal(self.Imean, self.Ivar)
         duration = np.random.normal(self.Tmean, self.Tvar)
         strength = max(strength, 0)
         duration = max(duration, 0)
         def I(t):
-            return strength * (self.start < t < self.start + duration)
+            return strength*(self.start_time < t < self.start_time + duration)
         return I
 
 
 class TempExperiment:
-    def __init__(self, minTemp=6.3, maxTemp=46.3, tempSteps=10, model=hh.HodgkinHuxley(), tol=10, currentPar=None):
-        """Initialize values used experiment"""
+    def __init__(self, minTemp=6.3, maxTemp=46.3, tempSteps=10, model=hh.HodgkinHuxley(), tol=0.5, currentPar=None):
+        """Initialize values used experiment. 
+        Parameters:
+        - minTemp, maxTemp, tempsteps:
+            Used for temperature range in which to test.
+        - model:
+            model of neuron
+        - tol:
+            tolerance used to distinguish from resting potential.
+            Given equilibrium optential Ve, we consider the range [V - tol, V + tol] to be resting potential"""
         self.minTemp = minTemp
         self.maxTemp = maxTemp
         assert maxTemp > minTemp
@@ -43,39 +51,48 @@ class TempExperiment:
         else:
             self.currentPar = currentPar
 
-    def run(self):
+    def run(self, num_expr = 3):
         """This function runs the Hodgkin-Huxley model for different temperatures
         and measures the time it takes to finish a single action potential.
         """
         temperatures = np.linspace(self.minTemp, self.maxTemp, self.tempSteps)
         print(f"Running action potential for temperatures: {temperatures}")
-        ap_durations = []
+        # durations_list should be a 2d array with multiple values for each temperature.
+        durations_list = []
         model = self.model
         rest_pot = model.V_eq
+        # Determine AP duration for each temperature
         for T in temperatures:
             print(f"Running {T} degrees...")
             model.set_temperature(T)
-            model.I = self.genCurrent()
-            t, y = model.solve_model()
-            volts = y[:,0]
-            duration = self.determineDuration(t, volts, rest_pot)
-            ap_durations.append(duration)
-        assert len(temperatures) == len(ap_durations)
-        self.results = (temperatures, ap_durations)
+            durations = []
+            for i in range(num_expr):
+                model.I = self.genCurrent()
+                t, y = model.solve_model()
+                volts = y[:,0]
+                duration = self.determineDuration(t, volts, rest_pot)
+                durations.append(duration)
+            durations_list.append(durations)
+        assert len(temperatures) == len(durations_list)
+        self.results = (temperatures, durations_list)
 
     def genCurrent(self):
         """Return current with stored paramters"""
         return self.currentPar.genCurrent()
 
-    def determineDuration(self, t, volts, rest_pot):
-        """Determine timespan during which volts is outside resting potential."""
+    def determineDuration(self, t, volts, V_eq):
+        """Determine timespan during which volts is outside resting potential.
+        We look for the difference between first and last time the voltage is in resting potential.
+        Resting potential is defined as [V_eq - tol, V_eq + tol].
+        The tolerance is stored in the experiment."""
+        assert len(volts) == len(t)
         start_index = -1
         end_index = -1
         tol = self.tol
         assert tol > 0
         for index, v in enumerate(volts):
             # Distance from action potential
-            dist = np.abs(v - rest_pot)
+            dist = np.abs(v - V_eq)
             if dist > tol:
                 end_index = index
                 if start_index == -1:
@@ -98,9 +115,20 @@ class TempExperiment:
         """Plots the values stored"""
         if title == "":
             title = f"AP duration vs temperature for injected current {self.currentPar.Tmean} second at {self.currentPar.Imean} volts"
-        temperatures, ap_durations = self.results
-        assert len(temperatures) == len(ap_durations)
-        plt.plot(temperatures, ap_durations, "-o")
+
+        # Retrieve results
+        temperatures, durations_list = self.results
+        assert len(temperatures) == len(durations_list)
+
+        # Format results for plt.scatter
+        x = []
+        y = []
+        for durations, temp in zip(durations_list, temperatures):
+            for duration in durations:
+                x.append(temp)
+                y.append(duration)
+        
+        plt.scatter(x, y)
         plt.title(title)
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
@@ -108,22 +136,24 @@ class TempExperiment:
 
     def store_csv(self, file_name):
         """Stores results in csv file."""
-        temperatures, ap_durations = self.results
+        temperatures, durations_list = self.results
+        assert len(temperatures) == len(durations_list)
         with open(file_name, 'w', newline='') as csvfile:
             writer = csv.writer(csvfile)
-            for t, ap in zip(temperatures, ap_durations):
-                writer.writerow([t, ap])
+            for t, ap in zip(temperatures, durations_list):
+                writer.writerow([t, *ap])
 
     def load_csv(self, file_name):
         """Loads results from csv file."""
         temperatures = []
-        ap_durations = []
+        durations_list = []
         with open(file_name, newline='') as csvfile:
             reader = csv.reader(csvfile)
             for row in reader:
                 temperatures.append(float(row[0]))
-                ap_durations.append(float(row[1]))
-        self.results = (temperatures, ap_durations)
+                durations = list(map(float, row[1:]))
+                durations_list.append(durations)
+        self.results = (temperatures, durations_list)
 
 if __name__ == "__main__":
     model = hh.HodgkinHuxley()
