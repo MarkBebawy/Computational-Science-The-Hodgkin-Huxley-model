@@ -19,6 +19,15 @@ class Validation:
         except ValueError:
             return False
 
+    def quick_val(value):
+        """This function validates the input of the 'quick' entry."""
+        return value.isdigit() and (int(value) == 0 or int(value) == 1)
+
+    def num_method_steps_val(value):
+        """This function validates the input of the size of time steps for numerical method entry."""
+        return Validation.is_float(value) and 0 < float(value) and float(value) <= 10
+
+    ## Option 1
     def inj_current_val(value):
         """This function validates the input of the injected current entry."""
         return Validation.is_float(value) and 0 <= float(value) and float(value) <= 150
@@ -31,15 +40,6 @@ class Validation:
         """This function validates the input of the end time for current injection entry."""
         return value.isdigit() and 0 <= int(value)
 
-    def quick_val(value):
-        """This function validates the input of the 'quick' entry."""
-        return value.isdigit() and (int(value) == 0 or int(value) == 1)
-
-    def num_method_steps_val(value):
-        """This function validates the input of the size of time steps for numerical method entry."""
-        return Validation.is_float(value) and 0 < float(value) and float(value) <= 10
-
-    ## Option 1
     def temp_val(value):
         """This function validates the temperature entry."""
         return Validation.is_float(value) and -60 <= float(value) and float(value) <= 60
@@ -68,6 +68,26 @@ class Validation:
     def run_time2_val(value):
         """This function validates the input of the run time (option 2) entry."""
         return value.isdigit() and 0 < int(value) and int(value) <= 10
+
+    def inj_mean_val(value):
+        """This function validates the input of the mean injection current strength."""
+        return Validation.is_float(value) and 0 <= float(value) and float(value) <= 150
+
+    def inj_var_val(value):
+        """This function validates the input of the variance of injection current strength."""
+        return Validation.is_float(value) and 0 <= float(value) and float(value) <= 50
+
+    def dur_mean_val(value):
+        """This function validates the input of the mean duration."""
+        return Validation.is_float(value) and 0 <= float(value) and float(value) <= 100
+
+    def dur_var_val(value):
+        """This function validates the input of the variance of the duration."""
+        return Validation.is_float(value) and 0 <= float(value) and float(value) <= 50
+
+    def i_start_time_val(value):
+        """This function validates the input of the injection start time."""
+        return value.isdigit() and 0 <= int(value)
 ########### -------------------------- ################
 
 
@@ -96,15 +116,19 @@ def setup_start(screen):
     """This function makes a screen, adds all labels, entry
     widgets and returns the screen and the entry
     widgets."""
-    # Strings, keys and default values for all fields. TODO: change all variables, make tuples...
-    settings_general = [('inj_current', '20', 'Amount of injected current (range 0 - 150)'),
-                        ('inj_start', '3', 'Start time for current injection'),
-                        ('inj_end', '4', 'End time for current injection'),
-                        ('quick', '0', 'Numerical method (RK4=0, Forw. Euler=1)'),
+    # Strings, keys and default values for all fields.
+    settings_general = [('quick', '0', 'Numerical method (RK4=0, Forw. Euler=1)'),
                         ('num_method_steps', '0.0001', 'Size of time steps for\nnumerical method (in interval (0, 10])')]
-    settings_op1 = [('temp', '6.3', 'Temperature (degrees celsius, interval [-60, 60])'),
+    settings_op1 = [('inj_current', '20', 'Amount of injected current (range 0 - 150)'),
+                    ('inj_start', '3', 'Start time for current injection'),
+                    ('inj_end', '4', 'End time for current injection'),
+                    ('temp', '6.3', 'Temperature (degrees celsius, interval [-60, 60])'),
                     ('run_time1', '10', 'Run time (miliseconds, interval (0, 100])')]
-    settings_op2 = [('min_temp', '6.3', 'Minimum temperature (celsius, interval [-60, 60])'),
+    settings_op2 = [('inj_mean', '20', 'Mean current strength, in interval [0, 150]'),
+                    ('inj_var', '1', 'Variance of current strength, in interval [0, 50]'),
+                    ('dur_mean', '1', 'Mean duration'), ('dur_var', '0.1', 'Variance for duration, in interval [0, 50]'),
+                    ('i_start_time', '0', 'Start time for current injection'),
+                    ('min_temp', '6.3', 'Minimum temperature (celsius, interval [-60, 60])'),
                     ('max_temp', '46.3', 'Maximum temperature (celsius, interval [-60, 60])'),
                     ('temp_steps', '10', 'Amount of experiments points in\ntemperature range, integer between 1 and 20'),
                     ('rest_pot_eps', '10', 'Tolerance for resting potential, interval (0, 15]'),
@@ -127,7 +151,10 @@ def setup_start(screen):
     entries_op1 = make_entries(screen, settings_op1)
 
     ## Options specific for temperature experiments.
-    tk.Label(screen, text="\nOption 2 variables", font='bold').pack(side=tk.TOP)
+    op2_title = ("\nOption 2 variables.\nInjected current is drawn from "
+                 "a normal distribution for a normal distributed duration.\n"
+                 "For determinism, use variance zero.")
+    tk.Label(screen, text=op2_title, font='bold').pack(side=tk.TOP)
     entries_op2 = make_entries(screen, settings_op2)
 
     return entries_general, entries_op1, entries_op2
@@ -163,12 +190,13 @@ def sim_AP(entries_gen, entries_op1):
         print("Simulating one action potential. This could take some time...")
 
         # Set parameters
-        model.set_injection_data(float(entries_gen['inj_current'].get()), int(entries_gen['inj_start'].get()),
-                                int(entries_gen['inj_end'].get()))
         model.set_num_method(bool(entries_gen['quick'].get()), float(entries_gen['num_method_steps'].get()))
+        model.set_injection_data(float(entries_op1['inj_current'].get()), int(entries_op1['inj_start'].get()),
+                                int(entries_op1['inj_end'].get()))
         model.set_temperature(float(entries_op1['temp'].get()))
         model.set_run_time(int(entries_op1['run_time1'].get()))
 
+        # TODO: plot method...
         # Simulate model and show plot.
         t, y = model.solve_model()
         plt.plot(t, y[:,0])
@@ -209,11 +237,12 @@ def sim_temp(entries_gen, entries_op2):
         curr_params = expy.CurrentParameters()
 
         # Set parameters
-        model.set_injection_data(float(entries_gen['inj_current'].get()), int(entries_gen['inj_start'].get()),
-                                int(entries_gen['inj_end'].get())) # TODO: aanpassen
         model.set_num_method(bool(entries_gen['quick'].get()), float(entries_gen['num_method_steps'].get()))
         temp_exp.set_temp_exp_data(float(entries_op2['min_temp'].get()), float(entries_op2['max_temp'].get()),
                                 int(entries_op2['temp_steps'].get()), float(entries_op2['rest_pot_eps'].get()), model)
+        curr_params.set_curr_data(float(entries_op2['inj_mean'].get()), float(entries_op2['inj_var'].get()),
+                                float(entries_op2['dur_mean'].get()), float(entries_op2['dur_var'].get()),
+                                int(entries_op2['i_start_time'].get()))
         model.set_run_time(int(entries_op2['run_time2'].get()))
 
         # Simulate model and show plot.

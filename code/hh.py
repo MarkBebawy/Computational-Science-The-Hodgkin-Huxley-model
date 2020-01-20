@@ -36,15 +36,15 @@ class HodgkinHuxley:
 
         # Set parameters that can be changed by GUI.
         self.run_time = 10
-        self.inject_current = 20
-        self.inj_start_time = 3
-        self.inj_end_time = 4
         self.quick = False
         self.num_method_time_steps = 0.0001
 
         # Set parameters that can be changed by GUI and are meant for simulating
         # one aciton potential.
         self.temperature = T
+        self.inject_current = 20
+        self.inj_start_time = 3
+        self.inj_end_time = 4
 
         # Calculate factor for temperature correction which is used for opening and closing rates.
         self.phi = 3 ** ((self.temperature - 6.3) / 10)

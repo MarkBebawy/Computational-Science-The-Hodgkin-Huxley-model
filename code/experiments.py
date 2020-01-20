@@ -28,10 +28,18 @@ class CurrentParameters:
             return strength*(self.start_time < t < self.start_time + duration)
         return I
 
+    def set_curr_data(self, Imean, Ivar, Tmean, Tvar, start):
+        """Setter for all instance variables."""
+        self.Imean = Imean
+        self.Ivar = Ivar
+        self.Tmean = Tmean
+        self.Tvar = Tvar
+        self.start_time = start
+
 
 class TempExperiment:
     def __init__(self, minTemp=6.3, maxTemp=46.3, tempSteps=10, model=hh.HodgkinHuxley(), tol=0.5, currentPar=None):
-        """Initialize values used experiment. 
+        """Initialize values used experiment.
         Parameters:
         - minTemp, maxTemp, tempsteps:
             Used for temperature range in which to test.
@@ -127,7 +135,7 @@ class TempExperiment:
             for duration in durations:
                 x.append(temp)
                 y.append(duration)
-        
+
         plt.scatter(x, y)
         plt.title(title)
         plt.xlabel(xlabel)
