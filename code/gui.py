@@ -71,25 +71,23 @@ class Validation:
 ########### -------------------------- ################
 
 
-def make_entries(screen, keys, settings, defaults):
-    """This function makes entries with labels from settings and default
-    values from defaults. It returns dictionaries with keys from 'keys'
-    and the entry widgets as values."""
-    # TODO: only one input array, three tuples
+def make_entries(screen, settings):
+    """This function makes entries with keys, default values and labels from
+    settings. It returns a dictionary with entry widgets as values."""
     entries = dict()
 
     # For each setting, create a text field and put it next to the
     # corresponding label.
-    for i, setting in enumerate(settings):
+    for i, (key, default, text) in enumerate(settings):
         row = tk.Frame(screen)
-        label = tk.Label(row, width=50, text=setting)
+        label = tk.Label(row, width=50, text=text)
         entry = tk.Entry(row)
-        entry.insert(0, defaults[i])
+        entry.insert(0, default)
 
         row.pack(side=tk.TOP, fill=tk.X)
         label.pack(side=tk.LEFT)
         entry.pack(side=tk.RIGHT, expand=tk.YES, fill=tk.X)
-        entries[keys[i]] = entry
+        entries[key] = entry
 
     return entries
 
@@ -99,25 +97,18 @@ def setup_start(screen):
     widgets and returns the screen and the entry
     widgets."""
     # Strings, keys and default values for all fields. TODO: change all variables, make tuples...
-    settings_general = ["Amount of injected current (range 0 - 150)", "Start time for current injection",
-        "End time for current injection", "Numerical method (RK4=0, Forw. Euler=1)",
-        "Size of time steps for\nnumerical method (in interval (0, 10])"]
-    settings_op1 = ["Temperature (degrees celsius, interval [-60, 60])", "Run time (miliseconds, interval (0, 100])"]
-    settings_op2 = ["Minimum temperature (celsius, interval [-60, 60])",
-        "Maximum temperature (celsius, interval [-60, 60])",
-        "Amount of experiments points in\ntemperature range, integer between 1 and 20",
-        "Tolerance for resting potential, interval (0, 15]",
-        "Run time per experiment (miliseconds, interval (0, 10])"]
-
-    # Keys for all fields.
-    keys_general = ["inj_current", "inj_start", "inj_end", "quick", "num_method_steps"]
-    keys_op1 = ["temp", "run_time1"]
-    keys_op2 = ["min_temp", "max_temp", "temp_steps", "rest_pot_eps", "run_time2"]
-
-    # Default values.
-    defaults_general = ['20', '3', '4', '0', '0.0001']
-    defaults_op1 = ['6.3', '10']
-    defaults_op2 = ['6.3', '46.3', '10', '10', '10']
+    settings_general = [('inj_current', '20', 'Amount of injected current (range 0 - 150)'),
+                        ('inj_start', '3', 'Start time for current injection'),
+                        ('inj_end', '4', 'End time for current injection'),
+                        ('quick', '0', 'Numerical method (RK4=0, Forw. Euler=1)'),
+                        ('num_method_steps', '0.0001', 'Size of time steps for\nnumerical method (in interval (0, 10])')]
+    settings_op1 = [('temp', '6.3', 'Temperature (degrees celsius, interval [-60, 60])'),
+                    ('run_time1', '10', 'Run time (miliseconds, interval (0, 100])')]
+    settings_op2 = [('min_temp', '6.3', 'Minimum temperature (celsius, interval [-60, 60])'),
+                    ('max_temp', '46.3', 'Maximum temperature (celsius, interval [-60, 60])'),
+                    ('temp_steps', '10', 'Amount of experiments points in\ntemperature range, integer between 1 and 20'),
+                    ('rest_pot_eps', '10', 'Tolerance for resting potential, interval (0, 15]'),
+                    ('run_time2', '10', 'Run time per experiment (miliseconds, interval (0, 10])')]
 
     welcome_str = ("Welcome to the Hodgkin-Huxley GUI.\n\nOption 1: One action potential "
         "can be simulated and plotted.\nOption 2: Temperature experiments "
@@ -129,15 +120,15 @@ def setup_start(screen):
 
     # Make widgets and text fields.
     ## General settings
-    entries_general = make_entries(screen, keys_general, settings_general, defaults_general)
+    entries_general = make_entries(screen, settings_general)
 
     ## Options specific for one action potential simulation.
     tk.Label(screen, text="\nOption 1 variables", font='bold').pack(side=tk.TOP)
-    entries_op1 = make_entries(screen, keys_op1, settings_op1, defaults_op1)
+    entries_op1 = make_entries(screen, settings_op1)
 
     ## Options specific for temperature experiments.
     tk.Label(screen, text="\nOption 2 variables", font='bold').pack(side=tk.TOP)
-    entries_op2 = make_entries(screen, keys_op2, settings_op2, defaults_op2)
+    entries_op2 = make_entries(screen, settings_op2)
 
     return entries_general, entries_op1, entries_op2
 
@@ -226,8 +217,8 @@ def sim_temp(entries_gen, entries_op2):
         model.set_run_time(int(entries_op2['run_time2'].get()))
 
         # Simulate model and show plot.
-        temps, ap_times = expy.speedTemperature(model)
-        expy.plot(temps, ap_times)
+        temp_exp.run()
+        temp_exp.plot()
     print("------------------------------------------------------")
 
 

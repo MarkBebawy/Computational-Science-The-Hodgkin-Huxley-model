@@ -86,7 +86,7 @@ class TempExperiment:
         else:
             return t[end_index] - t[start_index]
 
-    def set_temp_exp_data(min_temp, max_temp, steps, eps, model):
+    def set_temp_exp_data(self, min_temp, max_temp, steps, eps, model):
         """This function sets the temperature experiment variables."""
         self.minTemp = min_temp
         self.maxTemp = max_temp
