@@ -34,10 +34,10 @@ class TempExperiment:
         """Initialize values used experiment"""
         self.minTemp = minTemp
         self.maxTemp = maxTemp
+        assert maxTemp > minTemp
         self.tempSteps = tempSteps
         self.model = model
         self.tol = tol
-        self.quick = quick
         if currentPar is None:
             self.currentPar = CurrentParamters()
         else:
@@ -46,10 +46,6 @@ class TempExperiment:
     def run(self):
         """This function runs the Hodgkin-Huxley model for different temperatures
         and measures the time it takes to finish a single action potential.
-
-        Parameters:
-        - eps: error marigin around -65 mV such that [-65 - eps, -65 + eps]
-        is accepted as resting potential.
         """
         # TODO: documenteren, docstring aanpassen.
         temperatures = np.linspace(self.minTemp, self.maxTemp, self.tempSteps)
@@ -65,6 +61,7 @@ class TempExperiment:
             volts = y[:,0]
             duration = self.determineDuration(t, volts, rest_pot)
             ap_durations.append(duration)
+        assert len(temperatures) == len(ap_durations)
         self.results = (temperatures, ap_durations)
 
     def genCurrent(self):
@@ -76,6 +73,7 @@ class TempExperiment:
         start_index = -1
         end_index = -1
         tol = self.tol
+        assert tol > 0
         for index, v in enumerate(volts):
             # Distance from action potential
             dist = np.abs(v - rest_pot)
@@ -89,14 +87,16 @@ class TempExperiment:
         else:
             return t[end_index] - t[start_index]
 
-    def plot(self, title="Action potential duration vs temperature", xlabel="Temperature", ylabel="Action potential"):
+    def plot(self, title="", xlabel="Temperature", ylabel="Action potential"):
         """Plots the values stored"""
+        if title == "":
+            title = f"AP duration vs temperature for injected current {self.currentPar.Tmean} second at {self.currentPar.Imean} volts"
         temperatures, ap_durations = self.results
-        plt.plot(temperatures, ap_durations)
+        assert len(temperatures) == len(ap_durations)
+        plt.plot(temperatures, ap_durations, "-o")
         plt.title(title)
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
-        #plt.figtext(0.99, 0.5, 'footnote text \n test \n test', horizontalalignment='right')
         plt.show()
 
     def store_csv(self, file_name):
@@ -118,7 +118,9 @@ class TempExperiment:
                 ap_durations.append(float(row[1]))
         self.results = (temperatures, ap_durations)
 
-TE = TempExperiment(quick=True)
-TE.run()
+model = hh.HodgkinHuxley()
+model.quick = True
+TE = TempExperiment(model=model)
+TE.load_csv("testfile")
 TE.plot()
 plt.show()
