@@ -19,9 +19,11 @@ class CurrentParamters:
 
     def genCurrent(self):
         """Return a current function normaly with distributed time and strength"""
-        #TODO could give negative duration/strength
+        #TODO: could give negative duration/strength
         strength = np.random.normal(self.Imean, self.Ivar)
         duration = np.random.normal(self.Tmean, self.Tvar)
+        strength = max(strength, 0)
+        duration = max(duration, 0)
         def I(t):
             return strength*(t < duration)
         return I
