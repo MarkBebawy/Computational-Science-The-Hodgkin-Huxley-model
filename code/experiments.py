@@ -3,7 +3,7 @@ import numpy as np
 import hh
 import csv
 
-class CurrentParamters:
+class CurrentParameters:
     def __init__(self, Imean = 20, Ivar = 1, Tmean = 1, Tvar = 0.1, start_time=0):
         """Store current paramters in object.
         Parameters:
@@ -39,7 +39,7 @@ class TempExperiment:
         self.model = model
         self.tol = tol
         if currentPar is None:
-            self.currentPar = CurrentParamters()
+            self.currentPar = CurrentParameters()
         else:
             self.currentPar = currentPar
 
@@ -47,7 +47,6 @@ class TempExperiment:
         """This function runs the Hodgkin-Huxley model for different temperatures
         and measures the time it takes to finish a single action potential.
         """
-        # TODO: documenteren, docstring aanpassen.
         temperatures = np.linspace(self.minTemp, self.maxTemp, self.tempSteps)
         print(f"Running action potential for temperatures: {temperatures}")
         ap_durations = []
@@ -87,6 +86,14 @@ class TempExperiment:
         else:
             return t[end_index] - t[start_index]
 
+    def set_temp_exp_data(min_temp, max_temp, steps, eps, model):
+        """This function sets the temperature experiment variables."""
+        self.minTemp = min_temp
+        self.maxTemp = max_temp
+        self.tempStep = steps
+        self.tol = eps
+        self.model = model
+
     def plot(self, title="", xlabel="Temperature", ylabel="Action potential"):
         """Plots the values stored"""
         if title == "":
@@ -118,9 +125,10 @@ class TempExperiment:
                 ap_durations.append(float(row[1]))
         self.results = (temperatures, ap_durations)
 
-model = hh.HodgkinHuxley()
-model.quick = True
-TE = TempExperiment(model=model)
-TE.load_csv("testfile")
-TE.plot()
-plt.show()
+if __name__ == "__main__":
+    model = hh.HodgkinHuxley()
+    model.quick = True
+    TE = TempExperiment(model=model)
+    TE.load_csv("testfile")
+    TE.plot()
+    plt.show()

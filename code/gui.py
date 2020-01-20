@@ -98,7 +98,7 @@ def setup_start(screen):
     """This function makes a screen, adds all labels, entry
     widgets and returns the screen and the entry
     widgets."""
-    # Strings for all fields. TODO: change all variables, make tuples...
+    # Strings, keys and default values for all fields. TODO: change all variables, make tuples...
     settings_general = ["Amount of injected current (range 0 - 150)", "Start time for current injection",
         "End time for current injection", "Numerical method (RK4=0, Forw. Euler=1)",
         "Size of time steps for\nnumerical method (in interval (0, 10])"]
@@ -188,7 +188,6 @@ def sim_AP(entries_gen, entries_op1):
 def sim_temp(entries_gen, entries_op2):
     """This function runs the temperature experiments and shows a plot,
     using the parameters enterded by the user."""
-    model = hh.HodgkinHuxley()
     valid = True
 
     # For every general entry, get value and validate.
@@ -212,15 +211,18 @@ def sim_temp(entries_gen, entries_op2):
             valid = False
 
     if valid:
-        # TODO: use new expy.py...
         print("Running temperature experiments. This could take some time...")
+
+        model = hh.HodgkinHuxley()
+        temp_exp = expy.TempExperiment()
+        curr_params = expy.CurrentParameters()
 
         # Set parameters
         model.set_injection_data(float(entries_gen['inj_current'].get()), int(entries_gen['inj_start'].get()),
-                                int(entries_gen['inj_end'].get()))
+                                int(entries_gen['inj_end'].get())) # TODO: aanpassen
         model.set_num_method(bool(entries_gen['quick'].get()), float(entries_gen['num_method_steps'].get()))
-        model.set_temp_exp_data(float(entries_op2['min_temp'].get()), float(entries_op2['max_temp'].get()),
-                                int(entries_op2['temp_steps'].get()), float(entries_op2['rest_pot_eps'].get()))
+        temp_exp.set_temp_exp_data(float(entries_op2['min_temp'].get()), float(entries_op2['max_temp'].get()),
+                                int(entries_op2['temp_steps'].get()), float(entries_op2['rest_pot_eps'].get()), model)
         model.set_run_time(int(entries_op2['run_time2'].get()))
 
         # Simulate model and show plot.
