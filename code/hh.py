@@ -150,9 +150,6 @@ class HodgkinHuxley:
 
 if __name__ == "__main__":
     x = HodgkinHuxley()
-    t, y = x.solve_model(0.0001, 10, True)
-    plt.plot(t, y[:,0], label="FE")
-    t, y = x.solve_model(0.0001, 20, False)
-    plt.plot(t, y[:,0], label="RK4")
-    plt.legend()
+    t, y = x.solve_model(0.001, 40, True)
+    plt.plot(t, y[:,0])
     plt.show()
