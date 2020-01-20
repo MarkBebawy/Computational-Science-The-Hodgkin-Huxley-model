@@ -5,7 +5,7 @@
 
 import tkinter as tk
 import matplotlib.pyplot as plt
-import expy
+import experiments as expy
 import hh
 
 ########### Entry validation functions ################
