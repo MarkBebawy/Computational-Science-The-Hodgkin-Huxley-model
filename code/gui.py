@@ -151,7 +151,7 @@ def setup_start(screen):
     entries_op1 = make_entries(screen, settings_op1)
 
     ## Options specific for temperature experiments.
-    op2_title = ("\nOption 2 variables.\nInjected current is drawn from "
+    op2_title = ("\nOption 2 variables.\nInjected current is drawn from\n"
                  "a normal distribution for a normal distributed duration.\n"
                  "For determinism, use variance zero.")
     tk.Label(screen, text=op2_title, font='bold').pack(side=tk.TOP)

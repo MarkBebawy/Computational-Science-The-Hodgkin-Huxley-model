@@ -59,6 +59,7 @@ class TempExperiment:
         else:
             self.currentPar = currentPar
 
+    # TODO: in gui een optie voor hoevaak experimenten runnen.
     def run(self, num_expr = 3):
         """This function runs the Hodgkin-Huxley model for different temperatures
         and measures the time it takes to finish a single action potential.
