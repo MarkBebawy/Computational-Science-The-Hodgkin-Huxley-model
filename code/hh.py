@@ -65,14 +65,6 @@ class HodgkinHuxley:
         self.I_K = lambda V, n :  self.g_K * n ** 4 * (V - self.V_K)
         self.I_Na = lambda V, m, h : self.g_Na * m ** 3 * h * (V - self.V_Na)
 
-        # TODO: Fix/use setters and remove these comments....
-        # self.make_param('temperature', T, param_type=float, setter=lambda x: return (6.3 <= x and x < 50) * x)
-        # self.make_param('run_time', 10, param_type=int, setter=lambda x: return (0 < x and x < 100) * x)
-        # self.make_param('inject_current', 20, param_type=float, setter=lambda x: (0 < x and x < 150) * x)
-        # self.make_param('inj_start_time', 0, param_type=int, setter=lambda x: (0 < x and x < self.run_time) * x)
-        # self.make_param('inj_end_time', self.run_time, param_type=int, \
-        #     setter=lambda x: (self.inj_start_time < x and x < self.run_time) * x)
-
     def I(self, t):
         """Injected current as a function of time in nA/cm^2. """
         return self.inject_current * (self.inj_start_time < t and t < self.inj_end_time)
@@ -93,7 +85,6 @@ class HodgkinHuxley:
 
     def set_temperature(self, T):
         """Setter for the temperature of the model."""
-        # TODO: restricties op T? Meer DRY manier om dit te doen?
         self.temperature = T
         self.phi = 3 ** ((self.temperature - 6.3) / 10)
         self.a_n = lambda V : self.phi * (0.01 * (-V + self.V_eq + 10) / (np.exp((-V + self.V_eq + 10)/10) - 1))

@@ -75,6 +75,7 @@ def make_entries(screen, keys, settings, defaults):
     """This function makes entries with labels from settings and default
     values from defaults. It returns dictionaries with keys from 'keys'
     and the entry widgets as values."""
+    # TODO: only one input array, three tuples
     entries = dict()
 
     # For each setting, create a text field and put it next to the
@@ -97,7 +98,7 @@ def setup_start(screen):
     """This function makes a screen, adds all labels, entry
     widgets and returns the screen and the entry
     widgets."""
-    # Strings for all fields.
+    # Strings for all fields. TODO: change all variables, make tuples...
     settings_general = ["Amount of injected current (range 0 - 150)", "Start time for current injection",
         "End time for current injection", "Numerical method (RK4=0, Forw. Euler=1)",
         "Size of time steps for\nnumerical method (in interval (0, 10])"]
@@ -211,6 +212,7 @@ def sim_temp(entries_gen, entries_op2):
             valid = False
 
     if valid:
+        # TODO: use new expy.py...
         print("Running temperature experiments. This could take some time...")
 
         # Set parameters
