@@ -46,13 +46,6 @@ class HodgkinHuxley:
         # one aciton potential.
         self.temperature = T
 
-        # Set parameters that can be changed by GUI and are meant for running
-        # temperature experiments.
-        self.min_temp = 6.3
-        self.max_temp = 46.3
-        self.amount_temp_range = 10
-        self.rest_potential_eps = 1
-
         # Calculate factor for temperature correction which is used for opening and closing rates.
         self.phi = 3 ** ((self.temperature - 6.3) / 10)
         self.a_n = lambda V : self.phi * (0.01 * (-V + self.V_eq + 10) / (np.exp((-V + self.V_eq + 10)/10) - 1))
@@ -112,13 +105,6 @@ class HodgkinHuxley:
         and for time steps used by that method."""
         self.quick = quick
         self.num_method_time_steps = steps
-
-    def set_temp_exp_data(self, min_temp, max_temp, temp_steps, eps):
-        """Setter for min_temp, max_temp, amount_temp_range, and rest_potential_eps."""
-        self.min_temp = min_temp
-        self.max_temp = max_temp
-        self.amount_temp_range = temp_steps
-        self.rest_potential_eps = eps
 
     def solve_model(self, h=None, t=None, quick=None):
         """Solves the model using RK4 with step size h, for time (at least) t. If quick paramter is true then forwards Euler is used."""

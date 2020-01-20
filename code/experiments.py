@@ -55,7 +55,6 @@ class TempExperiment:
         """This function runs the Hodgkin-Huxley model for different temperatures
         and measures the time it takes to finish a single action potential.
         """
-        # TODO: documenteren, docstring aanpassen.
         temperatures = np.linspace(self.minTemp, self.maxTemp, self.tempSteps)
         print(f"Running action potential for temperatures: {temperatures}")
         # durations_list should be a 2d array with multiple values for each temperature.
@@ -104,6 +103,14 @@ class TempExperiment:
         else:
             return t[end_index] - t[start_index]
 
+    def set_temp_exp_data(min_temp, max_temp, steps, eps, model):
+        """This function sets the temperature experiment variables."""
+        self.minTemp = min_temp
+        self.maxTemp = max_temp
+        self.tempStep = steps
+        self.tol = eps
+        self.model = model
+
     def plot(self, title="", xlabel="Temperature", ylabel="Action potential"):
         """Plots the values stored"""
         if title == "":
@@ -148,10 +155,10 @@ class TempExperiment:
                 durations_list.append(durations)
         self.results = (temperatures, durations_list)
 
-model = hh.HodgkinHuxley()
-model.quick = True
-TE = TempExperiment(model=model)
-#TE.run()
-TE.load_csv("testfile")
-TE.plot()
-plt.show()
+if __name__ == "__main__":
+    model = hh.HodgkinHuxley()
+    model.quick = True
+    TE = TempExperiment(model=model)
+    TE.load_csv("testfile")
+    TE.plot()
+    plt.show()
