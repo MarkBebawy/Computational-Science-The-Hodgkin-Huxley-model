@@ -25,28 +25,29 @@ class HodgkinHuxley:
     def __init__(self, T=6.3):
         """Initialises variables of model, takes temperature as input with T = 6.3 as standard temperature."""
         self.C = 1
-        self.V0 = -65
+        self.V_eq = -65
         self.n0 = 0.317
         self.m0 = 0.05
         self.h0 = 0.6
-        self.V_Na = 50
-        self.V_K = -77
-        self.V_L = -54.4
+        self.V0 = -0.1
+        # self.V_eq = -65
+        self.V_Na = 50 - self.V_eq
+        self.V_K = -77 - self.V_eq
+        self.V_L = -54.4 - self.V_eq
         self.g_Na = 120
         self.g_K = 36
         self.g_L = 0.3
-        self.V_eq = -65
         self.a = 476 #238?
         self.R = 35.4
 
         # Calculate factor for temperature correction which is used for opening and closing rates.
         self.phi = 3 ** ((T - 6.3) / 10)
-        self.a_n = lambda V : self.phi * (0.01 * (-V + self.V_eq + 10) / (np.exp((-V + self.V_eq + 10)/10) - 1))
-        self.a_m = lambda V : self.phi * (0.1 * (-V + self.V_eq + 25) / (np.exp((-V + self.V_eq + 25)/10) - 1))
-        self.a_h = lambda V : self.phi * 0.07 * np.exp((-V + self.V_eq)/20)
-        self.b_n = lambda V : self.phi * 0.125 * np.exp((-V + self.V_eq)/80)
-        self.b_m = lambda V : self.phi * 4 * np.exp((-V + self.V_eq)/18)
-        self.b_h = lambda V : self.phi / (np.exp(((-V + self.V_eq) + 30)/10) + 1)
+        self.a_n = lambda V : self.phi * (0.01 * (-V + 10) / (np.exp((-V  + 10)/10) - 1))
+        self.a_m = lambda V : self.phi * (0.1 * (-V  + 25) / (np.exp((-V + 25)/10) - 1))
+        self.a_h = lambda V : self.phi * 0.07 * np.exp(-V/20)
+        self.b_n = lambda V : self.phi * 0.125 * np.exp(-V/80)
+        self.b_m = lambda V : self.phi * 4 * np.exp(-V/18)
+        self.b_h = lambda V : self.phi / (np.exp((-V + 30)/10) + 1)
         self.I_L = lambda V : self.g_L * (V - self.V_L)
         self.I_K = lambda V, n :  self.g_K * n ** 4 * (V - self.V_K)
         self.I_Na = lambda V, m, h : self.g_Na * m ** 3 * h * (V - self.V_Na)
@@ -79,9 +80,9 @@ class HodgkinHuxley:
             y = np.zeros(5)
             y[0] = W
             y[1] = 2 * self.R * (self.I_K(V, n) + self.I_Na(V, m, h) + self.I_L(V) - v * self.C * W) / self.a
-            y[2] = (-1/v) * self.a_n(V) * (1 - n) - self.b_n(V) * n
-            y[3] = (-1/v) * self.a_m(V) * (1 - m) - self.b_m(V) * m
-            y[4] = (-1/v) * self.a_h(V) * (1 - h) - self.b_h(V) * h
+            y[2] = (-1/v) * (self.a_n(V) * (1 - n) - self.b_n(V) * n)
+            y[3] = (-1/v) * (self.a_m(V) * (1 - m) - self.b_m(V) * m)
+            y[4] = (-1/v) * (self.a_h(V) * (1 - h) - self.b_h(V) * h)
             return y
         return f
 
@@ -89,7 +90,7 @@ class HodgkinHuxley:
         """Solves the model using RK4 with step size h, for time (at least) t. If quick paramter is true then forward Euler is used."""
         N = np.int(np.ceil(t/h))
         f = self.diff_eq()
-        y0 = np.array([self.V0, self.n0, self.m0, self.h0])
+        y0 = np.array([0, self.n0, self.m0, self.h0])
         if quick:
             sol = tools.fe(f, 0, y0, h, N)
         else:
@@ -108,7 +109,7 @@ class HodgkinHuxley:
 
 if __name__ == "__main__":
     x = HodgkinHuxley()
-    t, y = x.solve_model(0.0001, 30, True)
+    t, y = x.solve_dynamic_model(0.0001, 30, 18.8, True)
     plt.plot(t, y[:,0], label="FE")
     # t, y = x.solve_model(0.0001, 20, False)
     # plt.plot(t, y[:,0], label="RK4")
