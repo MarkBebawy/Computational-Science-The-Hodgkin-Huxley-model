@@ -133,6 +133,7 @@ class HodgkinHuxley:
     def plot_results(self):
         """This function plots the results of an action potential plot."""
         t, y = self.results
+        assert len(t) == len(y[:,0])
         plt.plot(t, y[:,0])
         plt.xlabel("Time (ms)")
         plt.ylabel("Voltage (mV)")

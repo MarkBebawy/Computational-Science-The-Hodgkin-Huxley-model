@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import experiments as expy
 import hh
 
-########### Entry validation functions ################
+########### Entry validation functions to assert valid input values ################
 class Validation:
     """This class implements validation methods for each entry widget."""
     def is_float(val):
@@ -262,8 +262,7 @@ def mainloop():
     entries_gen, entries_op1, entries_op2 = setup_start(screen)
 
     # Create buttons
-    # TODO: make the quit button worken
-    tk.Button(screen, text='Quit', command=screen.quit).pack(side=tk.LEFT, padx=5, pady=5)
+    tk.Button(screen, text='Quit', command=quit).pack(side=tk.LEFT, padx=5, pady=5)
     tk.Button(screen, text='Option 1\nSimulate action potential',
         command=(lambda e1=entries_gen, e2=entries_op1: sim_AP(e1, e2))).pack(side=tk.LEFT, padx=5, pady=5)
     tk.Button(screen, text='Option 2\nRun temperature experiments',

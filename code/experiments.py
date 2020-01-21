@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import hh
 import csv
+import os
 
 class CurrentParameters:
     def __init__(self, Imean = 20, Ivar = 1, Tmean = 1, Tvar = 0.1, start_time=0):
@@ -65,15 +66,19 @@ class TempExperiment:
         """
         temperatures = np.linspace(self.minTemp, self.maxTemp, self.tempSteps)
         print(f"Running action potential for temperatures: {temperatures}")
+
         # durations_list should be a 2d array with multiple values for each temperature.
         durations_list = []
         model = self.model
         rest_pot = model.V_eq
+
         # Determine AP duration for each temperature
         for T in temperatures:
             print(f"Running {T} degrees...")
             model.set_temperature(T)
             durations = []
+
+            # Run each temperature multiple times.
             for i in range(num_expr):
                 model.I = self.genCurrent()
                 t, y = model.solve_model()
@@ -100,6 +105,7 @@ class TempExperiment:
         end_index = -1
         tol = self.tol
         assert tol > 0
+
         for index, v in enumerate(volts):
             # Distance from action potential
             dist = np.abs(v - V_eq)
@@ -107,6 +113,7 @@ class TempExperiment:
                 end_index = index
                 if start_index == -1:
                     start_index = index
+
         # If end_index is still -1, no action potential was reached.
         if end_index == -1:
             return 0
@@ -155,6 +162,8 @@ class TempExperiment:
 
     def load_csv(self, file_name):
         """Loads results from csv file."""
+        assert os.path.isfile(file_name)
+
         temperatures = []
         durations_list = []
         with open(file_name, newline='') as csvfile:
@@ -163,6 +172,8 @@ class TempExperiment:
                 temperatures.append(float(row[0]))
                 durations = list(map(float, row[1:]))
                 durations_list.append(durations)
+
+        assert len(temperatures) == len(durations_list)
         self.results = (temperatures, durations_list)
 
 if __name__ == "__main__":
