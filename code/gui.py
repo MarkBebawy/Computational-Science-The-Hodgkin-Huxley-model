@@ -88,6 +88,10 @@ class Validation:
     def i_start_time_val(value):
         """This function validates the input of the injection start time."""
         return value.isdigit() and 0 <= int(value)
+
+    def num_exps_val(value):
+        """This function validates the input of the number of experiment iterations."""
+        return value.isdigit() and 1 <= int(value) and int(value) <= 30
 ########### -------------------------- ################
 
 
@@ -117,13 +121,13 @@ def setup_start(screen):
     widgets and returns the screen and the entry
     widgets."""
     # Strings, keys and default values for all fields.
-    settings_general = [('quick', '0', 'Numerical method (RK4=0, Forw. Euler=1)'),
+    settings_general = [('quick', '1', 'Numerical method (RK4=0, Forw. Euler=1)'),
                         ('num_method_steps', '0.0001', 'Size of time steps for\nnumerical method (in interval (0, 10])')]
     settings_op1 = [('inj_current', '20', 'Amount of injected current (range 0 - 150)'),
                     ('inj_start', '3', 'Start time for current injection'),
                     ('inj_end', '4', 'End time for current injection'),
                     ('temp', '6.3', 'Temperature (degrees celsius, interval [-60, 60])'),
-                    ('run_time1', '10', 'Run time (miliseconds, interval (0, 100])')]
+                    ('run_time1', '20', 'Run time (miliseconds, interval (0, 100])')]
     settings_op2 = [('inj_mean', '20', 'Mean current strength, in interval [0, 150]'),
                     ('inj_var', '1', 'Variance of current strength, in interval [0, 50]'),
                     ('dur_mean', '1', 'Mean duration'), ('dur_var', '0.1', 'Variance for duration, in interval [0, 50]'),
@@ -132,6 +136,7 @@ def setup_start(screen):
                     ('max_temp', '46.3', 'Maximum temperature (celsius, interval [-60, 60])'),
                     ('temp_steps', '10', 'Amount of experiments points in\ntemperature range, integer between 1 and 20'),
                     ('rest_pot_eps', '10', 'Tolerance for resting potential, interval (0, 15]'),
+                    ('num_exps', '3', 'Number of iterations per temperature, integer in [1, 30]'),
                     ('run_time2', '10', 'Run time per experiment (miliseconds, interval (0, 10])')]
 
     welcome_str = ("Welcome to the Hodgkin-Huxley GUI.\n\nOption 1: One action potential "
@@ -190,17 +195,15 @@ def sim_AP(entries_gen, entries_op1):
         print("Simulating one action potential. This could take some time...")
 
         # Set parameters
-        model.set_num_method(bool(entries_gen['quick'].get()), float(entries_gen['num_method_steps'].get()))
+        model.set_num_method(bool(int(entries_gen['quick'].get())), float(entries_gen['num_method_steps'].get()))
         model.set_injection_data(float(entries_op1['inj_current'].get()), int(entries_op1['inj_start'].get()),
                                 int(entries_op1['inj_end'].get()))
         model.set_temperature(float(entries_op1['temp'].get()))
         model.set_run_time(int(entries_op1['run_time1'].get()))
 
-        # TODO: plot method...
         # Simulate model and show plot.
-        t, y = model.solve_model()
-        plt.plot(t, y[:,0])
-        plt.show()
+        model.solve_model()
+        model.plot_results()
     print("------------------------------------------------------")
 
 
@@ -237,7 +240,7 @@ def sim_temp(entries_gen, entries_op2):
         curr_params = expy.CurrentParameters()
 
         # Set parameters
-        model.set_num_method(bool(entries_gen['quick'].get()), float(entries_gen['num_method_steps'].get()))
+        model.set_num_method(bool(int(entries_gen['quick'].get())), float(entries_gen['num_method_steps'].get()))
         temp_exp.set_temp_exp_data(float(entries_op2['min_temp'].get()), float(entries_op2['max_temp'].get()),
                                 int(entries_op2['temp_steps'].get()), float(entries_op2['rest_pot_eps'].get()), model)
         curr_params.set_curr_data(float(entries_op2['inj_mean'].get()), float(entries_op2['inj_var'].get()),
@@ -246,7 +249,7 @@ def sim_temp(entries_gen, entries_op2):
         model.set_run_time(int(entries_op2['run_time2'].get()))
 
         # Simulate model and show plot.
-        temp_exp.run()
+        temp_exp.run(int(entries_op2['num_exps'].get()))
         temp_exp.plot()
     print("------------------------------------------------------")
 
@@ -259,6 +262,7 @@ def mainloop():
     entries_gen, entries_op1, entries_op2 = setup_start(screen)
 
     # Create buttons
+    # TODO: make the quit button worken
     tk.Button(screen, text='Quit', command=screen.quit).pack(side=tk.LEFT, padx=5, pady=5)
     tk.Button(screen, text='Option 1\nSimulate action potential',
         command=(lambda e1=entries_gen, e2=entries_op1: sim_AP(e1, e2))).pack(side=tk.LEFT, padx=5, pady=5)

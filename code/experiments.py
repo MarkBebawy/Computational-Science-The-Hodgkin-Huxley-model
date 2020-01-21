@@ -59,8 +59,7 @@ class TempExperiment:
         else:
             self.currentPar = currentPar
 
-    # TODO: in gui een optie voor hoevaak experimenten runnen.
-    def run(self, num_expr = 3):
+    def run(self, num_expr=3):
         """This function runs the Hodgkin-Huxley model for different temperatures
         and measures the time it takes to finish a single action potential.
         """
@@ -84,6 +83,8 @@ class TempExperiment:
             durations_list.append(durations)
         assert len(temperatures) == len(durations_list)
         self.results = (temperatures, durations_list)
+
+        return self.results
 
     def genCurrent(self):
         """Return current with stored paramters"""

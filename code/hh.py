@@ -58,6 +58,9 @@ class HodgkinHuxley:
         self.I_K = lambda V, n :  self.g_K * n ** 4 * (V - self.V_K)
         self.I_Na = lambda V, m, h : self.g_Na * m ** 3 * h * (V - self.V_Na)
 
+        # Results, to be plotted...
+        self.results = ([], [])
+
     def I(self, t):
         """Injected current as a function of time in nA/cm^2. """
         return self.inject_current * (self.inj_start_time < t and t < self.inj_end_time)
@@ -123,7 +126,25 @@ class HodgkinHuxley:
             sol = tools.fe(f, 0, y0, h, N)
         else:
             sol = tools.rk4(f, 0, y0, h, N)
+
+        self.results = sol
         return sol
+
+    def plot_results(self):
+        """This function plots the results of an action potential plot."""
+        t, y = self.results
+        plt.plot(t, y[:,0])
+        plt.xlabel("Time (ms)")
+        plt.ylabel("Voltage (mV)")
+
+        title = (f"One neuron action potential. Voltage plotted against "
+        f"time, using temperature {self.temperature} degrees, "
+        f"injecting {self.inject_current} mV current "
+        f"from {self.inj_start_time} ms to {self.inj_end_time} ms. "
+        f"Numerical method {'Runge-Kutta-4' if self.quick == 0 else 'Forward-Euler'} "
+        f"with time steps {self.num_method_time_steps}.")
+        plt.title(title, wrap=True)
+        plt.show()
 
 if __name__ == "__main__":
     x = HodgkinHuxley()
