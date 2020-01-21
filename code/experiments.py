@@ -5,7 +5,7 @@ import csv
 import os
 
 class CurrentParameters:
-    def __init__(self, Imean = 20, Ivar = 1, Tmean = 1, Tvar = 0.1, start_time=0):
+    def __init__(self, Imean = 20, Ivar = 3, Tmean = 1, Tvar = 0.5, start_time=0):
         """Store current paramters in object.
         Parameters:
         - Imean: mean current strength,
@@ -179,7 +179,9 @@ class TempExperiment:
 if __name__ == "__main__":
     model = hh.HodgkinHuxley()
     model.quick = True
-    TE = TempExperiment(model=model)
+    TE = TempExperiment(model=model, tempSteps=20)
+    #TE.run(num_expr=10)
+    #TE.store_csv("testfile")
     TE.load_csv("testfile")
     TE.plot()
-    plt.show()
+    
