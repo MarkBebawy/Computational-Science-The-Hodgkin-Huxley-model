@@ -29,15 +29,14 @@ class HodgkinHuxley:
         self.n0 = 0.317
         self.m0 = 0.05
         self.h0 = 0.6
-        self.V0 = -0.1
-        # self.V_eq = -65
+        self.V0 = 0.1 # Small negative displacement is needed for model
         self.V_Na = 50 - self.V_eq
         self.V_K = -77 - self.V_eq
         self.V_L = -54.4 - self.V_eq
         self.g_Na = 120
         self.g_K = 36
         self.g_L = 0.3
-        self.a = 476 #238?
+        self.a = 0.0238 # 238 original HH article, 476 according to other article
         self.R = 35.4
 
         # Calculate factor for temperature correction which is used for opening and closing rates.
@@ -54,9 +53,7 @@ class HodgkinHuxley:
 
     def I(self, t):
         """Injected current as a function of time in nA/cm^2. """
-        # return 20
-        return 20 * (3 < t and t < 4)
-        # return 10*(t>100) - 10*(t>200) + 35*(t>300) - 35*(t>400)
+        return 20 * (3 < t < 4)
 
 
     def diff_eq(self):
@@ -72,22 +69,27 @@ class HodgkinHuxley:
             return y
         return f
 
-    def diff_eq_dynamic(self, v):
+    def diff_eq_dynamic(self, K_guess):
         """Returns function f such that the differential equations can be described as x' = f(t, x),
-        where x = [V, W, n, m, h]. W is a substitution variable for V'. """
+        where x = [V, W, n, m, h]. W is a substitution variable for dV/dt. """
         def f(t, x):
             V, W, n, m, h = x
             y = np.zeros(5)
             y[0] = W
-            y[1] = 2 * self.R * (self.I_K(V, n) + self.I_Na(V, m, h) + self.I_L(V) - v * self.C * W) / self.a
-            y[2] = (-1/v) * (self.a_n(V) * (1 - n) - self.b_n(V) * n)
-            y[3] = (-1/v) * (self.a_m(V) * (1 - m) - self.b_m(V) * m)
-            y[4] = (-1/v) * (self.a_h(V) * (1 - h) - self.b_h(V) * h)
+            y[1] = K_guess * (W + (self.I_K(V, n) + self.I_Na(V, m, h) + self.I_L(V)) / self.C_m)
+            y[2] = self.a_n(V) * (1 - n) - self.b_n(V) * n
+            y[3] = self.a_m(V) * (1 - m) - self.b_m(V) * m
+            y[4] = self.a_h(V) * (1 - h) - self.b_h(V) * h
             return y
         return f
 
+    def speed_from_K(self, K):
+        """Return velocity in m/s from constant K."""
+        return np.sqrt(K * self.a / (2 * self.R * self.C_m))
+
     def solve_model(self, h, t, quick=False):
-        """Solves the model using RK4 with step size h, for time (at least) t. If quick paramter is true then forward Euler is used."""
+        """Solves the model using RK4 with step size h, for time (at least) t. 
+        If quick parameter is true then forward Euler is used."""
         N = np.int(np.ceil(t/h))
         f = self.diff_eq()
         y0 = np.array([0, self.n0, self.m0, self.h0])
@@ -97,9 +99,12 @@ class HodgkinHuxley:
             sol = tools.rk4(f, 0, y0, h, N)
         return sol
     
-    def solve_dynamic_model(self, h, t, v_guess, quick=False):
+    def solve_dynamic_model(self, h, t, K_guess, quick=False)
+        """Solves dynamic model using RK4 with step size h, for time (at least) t.
+        If quick parameter is true then forward Euler is used.
+        K_guess is a guess for the constant K from which the propagation speed can be determined."""
         N = np.int(np.ceil(t/h))
-        f = self.diff_eq_dynamic(v_guess)
+        f = self.diff_eq_dynamic(K_guess)
         y0 = np.array([self.V0, 0, self.n0, self.m0, self.h0])
         if quick:
             sol = tools.fe(f, 0, y0, h, N)
@@ -109,9 +114,9 @@ class HodgkinHuxley:
 
 if __name__ == "__main__":
     x = HodgkinHuxley()
-    t, y = x.solve_dynamic_model(0.0001, 30, 18.8, True)
-    plt.plot(t, y[:,0], label="FE")
-    # t, y = x.solve_model(0.0001, 20, False)
-    # plt.plot(t, y[:,0], label="RK4")
+    t, y = x.solve_model(0.001, 30, True)
+    plt.plot(t, y[:,0], label="simple")
+    t, y = x.solve_dynamic_model(0.001, 30, 18.8 True)
+    plt.plot(t, y[:,0], label="dynamic")
     plt.legend()
     plt.show()
