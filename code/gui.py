@@ -6,6 +6,7 @@
 import tkinter as tk
 import matplotlib.pyplot as plt
 import experiments as expy
+import validation as vali
 import hh
 
 ########### Entry validation functions to assert valid input values ################
@@ -141,7 +142,8 @@ def setup_start(screen):
 
     welcome_str = ("Welcome to the Hodgkin-Huxley GUI.\n\nOption 1: One action potential "
         "can be simulated and plotted.\nOption 2: Temperature experiments "
-        "can be run.\n\nWhen running either option, the variables of\nthe other option will be ignored.\n"
+        "can be run.\nModel verification shows model obeys all-or-nothing principle\n\n"
+        "When running either option, the variables of\nthe other option will be ignored.\n"
         "On wrong input, no simulation will run.\nSee terminal for how to fix this."
         "\n\n\nGeneral options")
 
@@ -254,6 +256,15 @@ def sim_temp(entries_gen, entries_op2):
     print("------------------------------------------------------")
 
 
+def verificate_model():
+    """This function runs the model verification and plots the result (all-or-nothing principle)."""
+    print("Model verification: all-or-nothing principle. This could take some time...")
+    ver_mod = vali.ValidationExperiment()
+    ver_mod.run()
+    ver_mod.plot()
+    print("------------------------------------------------------")
+
+
 def mainloop():
     """This function sets up a screen, handles all variables and
     calls the appropriate functions when buttons are pressed. It
@@ -267,7 +278,7 @@ def mainloop():
         command=(lambda e1=entries_gen, e2=entries_op1: sim_AP(e1, e2))).pack(side=tk.LEFT, padx=5, pady=5)
     tk.Button(screen, text='Option 2\nRun temperature experiments',
         command=(lambda e1=entries_gen, e2=entries_op2: sim_temp(e1, e2))).pack(side=tk.LEFT, padx=5, pady=5)
-
+    tk.Button(screen, text='Model verification', command=verificate_model).pack(side=tk.LEFT, padx=5, pady=5)
     screen.mainloop()
 
 

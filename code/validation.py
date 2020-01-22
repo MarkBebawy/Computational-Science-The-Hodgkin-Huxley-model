@@ -12,7 +12,7 @@ class ValidationExperiment:
         - current_range:
             range of rates at which current is injected. Should be lower than the peak value.
         - model:
-            Hodgkin Huxley model of a neuron. 
+            Hodgkin Huxley model of a neuron.
             Contains time and number of steps used in the numerical method (and which to use)."""
         self.current_duration = current_duration
         self.current_range = current_range
@@ -20,9 +20,11 @@ class ValidationExperiment:
 
     def run(self):
         """Runs the validation experiment."""
+        print(f"Injecting currents: {self.current_range}")
         model = self.model
         maxima = []
         for inj_voltage in self.current_range:
+            print(f"Injecting {inj_voltage}...")
             model.set_injection_data(inj_voltage, 0, self.current_duration)
             t, y = model.solve_model()
             cell_voltage = y[:,0]
@@ -42,7 +44,7 @@ class ValidationExperiment:
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
         plt.show()
-    
+
     def store_csv(self, file_name):
         """Stores results in csv file."""
         maxima = self.maxima
@@ -64,11 +66,10 @@ class ValidationExperiment:
                 maxima.append(float(row[1]))
         self.maxima = maxima
         self.current_range = current_range
-    
+
 if __name__ == "__main__":
     model = hh.HodgkinHuxley()
     model.quick=True
     VE = ValidationExperiment(model=model)
-    #VE.run()
-    VE.load_csv("testval")
+    VE.run()
     VE.plot()
