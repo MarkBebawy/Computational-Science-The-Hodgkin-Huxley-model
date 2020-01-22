@@ -88,10 +88,3 @@ class ValidationExperiment:
         assert len(maxima) == len(current_range)
         self.maxima = maxima
         self.current_range = current_range
-
-if __name__ == "__main__":
-    model = hh.HodgkinHuxley()
-    model.quick=True
-    VE = ValidationExperiment(model=model, current_range=np.linspace(0, 60, 5))
-    VE.run()
-    VE.plot()

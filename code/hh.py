@@ -152,12 +152,3 @@ class HodgkinHuxley:
         plt.ylabel("Voltage (mV)")
         plt.plot(t, y[:,0], c='red')
         plt.show()
-
-if __name__ == "__main__":
-    x = HodgkinHuxley()
-    def I(t):
-        return 20*(t < 1) + 20*( t > 15 and t < 15.7)
-    x.I = I
-    t, y = x.solve_model(0.001, 40, True)
-    plt.plot(t, y[:,0])
-    plt.show()

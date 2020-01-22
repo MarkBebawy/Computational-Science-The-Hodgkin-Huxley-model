@@ -188,11 +188,3 @@ class TempExperiment:
 
         assert len(temperatures) == len(durations_list)
         self.results = (temperatures, durations_list)
-
-if __name__ == "__main__":
-    model = hh.HodgkinHuxley()
-    model.quick = True
-    TE = TempExperiment(model=model, tempSteps=20)
-    TE.run(num_expr=10)
-    TE.load_csv("testfile")
-    TE.plot()
