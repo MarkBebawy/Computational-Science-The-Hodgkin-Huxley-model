@@ -1,12 +1,15 @@
+## Tools for solving differential equations.
 import numpy as np
 
 def rk4(f, t0, y0, h, N):
-    """"Solve IVP given by y' = f(t, y), y(t_0) = y_0 with step size h > 0, for N steps."""
+    """"Solve IVP given by y' = f(t, y), y(t_0) = y_0 with step size h > 0, for N steps,
+    using the Runge-Kutta 4 method."""
     t = t0 + np.array([i * h for i in range(N+1)])
     m = len(y0)
     y = np.zeros((N+1, m))
     y[0] = y0
 
+    # Repeatedly approximate next value.
     for n in range(N):
         k1 = f(t[n], y[n])
         k2 = f(t[n] + h/2, y[n] + k1 * h/2)
@@ -17,12 +20,14 @@ def rk4(f, t0, y0, h, N):
     return t, y
 
 def fe(f, t0, y0, h, N):
-    """"Solve IVP given by y' = f(t, y), y(t_0) = y_0 with step size h > 0, for N steps."""
+    """"Solve IVP given by y' = f(t, y), y(t_0) = y_0 with step size h > 0, for N steps,
+    using the Forward-Euler method."""
     t = t0 + np.array([i * h for i in range(N+1)])
     m = len(y0)
     y = np.zeros((N+1, m))
     y[0] = y0
 
+    # Repeatedly approximate next value.
     for n in range(N):
         y[n+1] = y[n] + h*f(t[n], y[n])
     return t, y

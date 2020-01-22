@@ -1,7 +1,6 @@
-# This file implements the graphical user interface
-# for the model. The code is inspired by the tutorial
-# which can be found on:
-# https://www.python-course.eu/tkinter_entries.php.
+## This file implements the graphical user interface
+## for the model. The code is inspired by the tutorial
+## which can be found on: https://www.python-course.eu/tkinter_entries.php.
 
 import tkinter as tk
 import matplotlib.pyplot as plt
@@ -131,7 +130,8 @@ def setup_start(screen):
                     ('run_time1', '20', 'Run time (miliseconds, interval (0, 100])')]
     settings_op2 = [('inj_mean', '20', 'Mean current strength, in interval [0, 150]'),
                     ('inj_var', '1', 'Variance of current strength, in interval [0, 50]'),
-                    ('dur_mean', '1', 'Mean duration'), ('dur_var', '0.1', 'Variance for duration, in interval [0, 50]'),
+                    ('dur_mean', '1', 'Mean duration'),
+                    ('dur_var', '0.1', 'Variance for duration, in interval [0, 50]'),
                     ('i_start_time', '0', 'Start time for current injection'),
                     ('min_temp', '6.3', 'Minimum temperature (celsius, interval [-60, 60])'),
                     ('max_temp', '46.3', 'Maximum temperature (celsius, interval [-60, 60])'),
@@ -142,7 +142,7 @@ def setup_start(screen):
 
     welcome_str = ("Welcome to the Hodgkin-Huxley GUI.\n\nOption 1: One action potential "
         "can be simulated and plotted.\nOption 2: Temperature experiments "
-        "can be run.\nModel verification shows model obeys all-or-nothing principle\n\n"
+        "can be run.\nModel verification shows model obeys all-or-nothing principle.\n\n"
         "When running either option, the variables of\nthe other option will be ignored.\n"
         "On wrong input, no simulation will run.\nSee terminal for how to fix this."
         "\n\n\nGeneral options")
@@ -256,7 +256,7 @@ def sim_temp(entries_gen, entries_op2):
     print("------------------------------------------------------")
 
 
-def verificate_model():
+def model_verification():
     """This function runs the model verification and plots the result (all-or-nothing principle)."""
     print("Model verification: all-or-nothing principle. This could take some time...")
     ver_mod = vali.ValidationExperiment()
@@ -278,7 +278,7 @@ def mainloop():
         command=(lambda e1=entries_gen, e2=entries_op1: sim_AP(e1, e2))).pack(side=tk.LEFT, padx=5, pady=5)
     tk.Button(screen, text='Option 2\nRun temperature experiments',
         command=(lambda e1=entries_gen, e2=entries_op2: sim_temp(e1, e2))).pack(side=tk.LEFT, padx=5, pady=5)
-    tk.Button(screen, text='Model verification', command=verificate_model).pack(side=tk.LEFT, padx=5, pady=5)
+    tk.Button(screen, text='Model verification', command=model_verification).pack(side=tk.LEFT, padx=5, pady=5)
     screen.mainloop()
 
 

@@ -1,3 +1,7 @@
+## Class HodgkinHuxley implementing functions for setting all variables,
+## and for creating, solving and plotting the corresponding
+## differential equation (of the Hodgkin-Huxley model).
+
 import numpy as np
 import matplotlib.pyplot as plt
 import tools
@@ -110,7 +114,8 @@ class HodgkinHuxley:
         self.num_method_time_steps = steps
 
     def solve_model(self, h=None, t=None, quick=None):
-        """Solves the model using RK4 with step size h, for time (at least) t. If quick paramter is true then forwards Euler is used."""
+        """Solves the model using RK4 with step size h, for time (at least) t.
+        If quick paramter is true then forward Euler is used."""
         # Default values for parameters.
         if h is None:
             h = self.num_method_time_steps
@@ -119,6 +124,7 @@ class HodgkinHuxley:
         if quick is None:
             quick = self.quick
 
+        # Calculate number of steps, differential equation and solve it.
         N = np.int(np.ceil(t/h))
         f = self.diff_eq()
         y0 = np.array([self.V0, self.n0, self.m0, self.h0])
@@ -134,17 +140,17 @@ class HodgkinHuxley:
         """This function plots the results of an action potential plot."""
         t, y = self.results
         assert len(t) == len(y[:,0])
-        plt.plot(t, y[:,0])
-        plt.xlabel("Time (ms)")
-        plt.ylabel("Voltage (mV)")
-
         title = (f"One neuron action potential. Voltage plotted against "
         f"time, using temperature {self.temperature} degrees, "
         f"injecting {self.inject_current} mV current "
         f"from {self.inj_start_time} ms to {self.inj_end_time} ms. "
         f"Numerical method {'Runge-Kutta-4' if self.quick == 0 else 'Forward-Euler'} "
         f"with time steps {self.num_method_time_steps}.")
+
         plt.title(title, wrap=True)
+        plt.xlabel("Time (ms)")
+        plt.ylabel("Voltage (mV)")
+        plt.plot(t, y[:,0], c='red')
         plt.show()
 
 if __name__ == "__main__":

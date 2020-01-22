@@ -1,3 +1,6 @@
+## TempExperiment class for running temperature experiments, using
+## current injection parameters from CurrentParameters class.
+
 import matplotlib.pyplot as plt
 import numpy as np
 import hh
@@ -20,13 +23,13 @@ class CurrentParameters:
         self.start_time = start_time
 
     def genCurrent(self):
-        """Return a current function normaly with distributed time and strength."""
+        """Return a current function with normally distributed time and strength."""
         strength = np.random.normal(self.Imean, self.Ivar)
         duration = np.random.normal(self.Tmean, self.Tvar)
         strength = max(strength, 0)
         duration = max(duration, 0)
         def I(t):
-            return strength*(self.start_time < t < self.start_time + duration)
+            return strength*(self.start_time < t and t < self.start_time + duration)
         return I
 
     def set_curr_data(self, Imean, Ivar, Tmean, Tvar, start):
@@ -48,13 +51,15 @@ class TempExperiment:
             model of neuron
         - tol:
             tolerance used to distinguish from resting potential.
-            Given equilibrium optential Ve, we consider the range [V - tol, V + tol] to be resting potential"""
+            Given equilibrium optential Ve, we consider the range [V - tol, V + tol] to be resting potential
+        - currentPar:
+            class containing current injection parameters."""
         self.minTemp = minTemp
         self.maxTemp = maxTemp
-        assert maxTemp > minTemp
         self.tempSteps = tempSteps
         self.model = model
         self.tol = tol
+
         if currentPar is None:
             self.currentPar = CurrentParameters()
         else:
@@ -62,8 +67,7 @@ class TempExperiment:
 
     def run(self, num_expr=3):
         """This function runs the Hodgkin-Huxley model for different temperatures
-        and measures the time it takes to finish a single action potential.
-        """
+        and measures the time it takes to finish a single action potential."""
         temperatures = np.linspace(self.minTemp, self.maxTemp, self.tempSteps)
         print(f"Running action potential for temperatures: {temperatures}")
 
@@ -78,7 +82,7 @@ class TempExperiment:
             model.set_temperature(T)
             durations = []
 
-            # Run each temperature multiple times.
+            # Run each temperature multiple times, for statistical confidence.
             for i in range(num_expr):
                 model.I = self.genCurrent()
                 t, y = model.solve_model()
@@ -86,9 +90,9 @@ class TempExperiment:
                 duration = self.determineDuration(t, volts, rest_pot)
                 durations.append(duration)
             durations_list.append(durations)
+
         assert len(temperatures) == len(durations_list)
         self.results = (temperatures, durations_list)
-
         return self.results
 
     def genCurrent(self):
@@ -99,7 +103,7 @@ class TempExperiment:
         """Determine timespan during which volts is outside resting potential.
         We look for the difference between first and last time the voltage is in resting potential.
         Resting potential is defined as [V_eq - tol, V_eq + tol].
-        The tolerance is stored in the experiment."""
+        The tolerance is stored in the experiment class."""
         assert len(volts) == len(t)
         start_index = -1
         end_index = -1
@@ -107,10 +111,15 @@ class TempExperiment:
         assert tol > 0
 
         for index, v in enumerate(volts):
-            # Distance from action potential
+            # Distance from action potential, end_index is increased until
+            # returning to resting potential and not leaving resting potential
+            # for the rest of the running time.
             dist = np.abs(v - V_eq)
             if dist > tol:
                 end_index = index
+
+                # If this time step is the first time outside resting potential,
+                # then action potential is starting now.
                 if start_index == -1:
                     start_index = index
 
@@ -124,14 +133,18 @@ class TempExperiment:
         """This function sets the temperature experiment variables."""
         self.minTemp = min_temp
         self.maxTemp = max_temp
-        self.tempStep = steps
+        self.tempSteps = steps
         self.tol = eps
         self.model = model
 
-    def plot(self, title="", xlabel="Temperature", ylabel="Action potential"):
-        """Plots the values stored"""
+    def plot(self, title="", xlabel="Temperature (degrees celsius)", ylabel="Action potential duration (ms)"):
+        """Plots the values stored: duration of action potential against
+        temperature."""
         if title == "":
-            title = f"AP duration vs temperature for injected current {self.currentPar.Tmean} second at {self.currentPar.Imean} volts"
+            title = (f"Duration of action potential plotted against temperature. "
+                     f"Injected normal distributed current with mean of {self.currentPar.Imean} mV "
+                     f"for normal distributed duration with mean {self.currentPar.Tmean} ms. Standard deviations "
+                     f"{self.currentPar.Ivar} and {self.currentPar.Tvar} respectively.")
 
         # Retrieve results
         temperatures, durations_list = self.results
@@ -145,10 +158,10 @@ class TempExperiment:
                 x.append(temp)
                 y.append(duration)
 
-        plt.scatter(x, y)
-        plt.title(title)
+        plt.title(title, wrap=True)
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
+        plt.scatter(x, y)
         plt.show()
 
     def store_csv(self, file_name):
@@ -180,8 +193,6 @@ if __name__ == "__main__":
     model = hh.HodgkinHuxley()
     model.quick = True
     TE = TempExperiment(model=model, tempSteps=20)
-    #TE.run(num_expr=10)
-    #TE.store_csv("testfile")
+    TE.run(num_expr=10)
     TE.load_csv("testfile")
     TE.plot()
-    
