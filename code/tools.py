@@ -26,3 +26,7 @@ def fe(f, t0, y0, h, N):
     for n in range(N):
         y[n+1] = y[n] + h*f(t[n], y[n])
     return t, y
+
+def solve_quadratic(a, b, c):
+    D = b ** 2 - 4 * a * c
+    return (-b + np.sqrt(D)) / (2 * a), (-b - np.sqrt(D)) / (2 * a)
