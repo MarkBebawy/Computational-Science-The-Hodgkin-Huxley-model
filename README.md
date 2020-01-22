@@ -36,15 +36,16 @@ Code for model verification. This is done by checking if the model obeys
 the [all-or-nothing principle](https://en.wikipedia.org/wiki/All-or-none_law).
 
 ------------------
+### Folder 'figures'
+Contains three *.svg files, these are three figures that we used to draw conclusions about the
+Hodgin-Huxley model and in particular about the effects of temperature on the speed of an action potential.
+The figures are shown below.
+![Action potential](figures/action_potential.svg)
+![Temperature expetiments](figures/temperature_exp.svg)
+![Verification](figures/verification.svg)
+
 ### Folder 'proposal'
 This folder contains our project proposal and the feedback that we received on it.
-
-### *.svg
-Three figures that we used to draw conclusions about the Hodgin-Huxley model and in particular
-about the effects of temperature on the speed of an action potential.
-![Action potential](action_potential.svg)
-![Temperature expetiments](temperature_exp.svg)
-![Verification](verification.svg)
 
 ### Code_review.txt
 Instructions for reproducing the .svg figures above (same content as Code review instructions
