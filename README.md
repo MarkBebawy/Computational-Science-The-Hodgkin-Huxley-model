@@ -40,8 +40,11 @@ the [all-or-nothing principle](https://en.wikipedia.org/wiki/All-or-none_law).
 Contains three *.svg files, these are three figures that we used to draw conclusions about the
 Hodgin-Huxley model and in particular about the effects of temperature on the speed of an action potential.
 The figures are shown below.
+
 ![Action potential](figures/action_potential.svg)
+
 ![Temperature expetiments](figures/temperature_exp.svg)
+
 ![Verification](figures/verification.svg)
 
 ### Folder 'proposal'
