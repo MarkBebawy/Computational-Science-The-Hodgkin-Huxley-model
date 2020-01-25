@@ -51,7 +51,7 @@ class TempExperiment:
             model of neuron
         - tol:
             tolerance used to distinguish from resting potential.
-            Given equilibrium optential Ve, we consider the range [V - tol, V + tol] to be resting potential
+            Given equilibrium potential Ve, we consider the range [V - tol, V + tol] to be resting potential
         - currentPar:
             class containing current injection parameters."""
         self.minTemp = minTemp
@@ -114,7 +114,7 @@ class TempExperiment:
             # Distance from action potential, end_index is increased until
             # returning to resting potential and not leaving resting potential
             # for the rest of the running time.
-            dist = np.abs(v - V_eq)
+            dist = np.abs(v)
             if dist > tol:
                 end_index = index
 

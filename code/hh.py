@@ -146,6 +146,8 @@ class HodgkinHuxley:
             sol = tools.fe(f, 0, y0, h, N)
         else:
             sol = tools.rk4(f, 0, y0, h, N)
+
+        self.results = sol
         return sol
     
     def solve_dynamic_model(self, h, t, c, quick=False):
@@ -181,10 +183,13 @@ class HodgkinHuxley:
                 i += 1
             return y[-i, 0]
         return tools.bisect(g, c_low, c_high, n)
-        
+
     def plot_results(self):
         """This function plots the results of an action potential plot."""
         t, y = self.results
+        print(t)
+        print("---")
+        print(y[:,0])
         assert len(t) == len(y[:,0])
         title = (f"One neuron action potential. Voltage plotted against "
         f"time, using temperature {self.temperature} degrees, "
