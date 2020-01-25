@@ -1,0 +1,35 @@
+Code review instructions.
+Need:
+- Linux machine (terminal)
+- python3 with numpy and matplotlib
+
+We made three interesting figures to showcase our model: action_potential.svg, temperature_exp.svg, verification.svg.
+All the figures can be reproduces using the GUI, which is started by running 'python3 gui.py' from the 'code/' folder.
+This will open a window where a bunch of paramaters can be filled. Do not change any of the default parameters,
+as these values are used to genereate the three figures in this folder. If you accidently change some values,
+simply close the GUI with the 'Quit' button and run 'python3 gui.py' again. The default values will be restored that way.
+
+1. action_potential.svg
+To reproduce 'action_potential.svg':
+a) open a terminal and navigate to the 'code/' folder.
+    (From the folder in which this file is: 'cd code/'.)
+b) run 'python3 gui.py'
+c) There are four buttons on the screen: press 'Option 1 Simulate action potential'.
+d) Wait for a couple of seconds.
+
+2. temperature_exp.svg
+To reproduce 'temperature_exp.svg':
+a) open a terminal and navigate to the 'code/' folder.
+    (From the folder in which this file is: 'cd code/'.)
+b) run 'python3 gui.py'
+c) There are four buttons on the screen: press 'Option 2 Run temperature experiments'.
+d) Wait for some time (see terminal for progress).
+
+3. verification.svg
+To reproduce 'verification.svg':
+a) open a terminal and navigate to the 'code/' folder.
+    (From the folder in which this file is: 'cd code/'.)
+b) run 'python3 gui.py'
+c) There are four buttons on the screen: press 'Model verification'.
+d) Wait for some time (see terminal for progress).
+Note: this figure takes the longest time to reproduce.

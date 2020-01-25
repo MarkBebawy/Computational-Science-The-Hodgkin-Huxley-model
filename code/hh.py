@@ -1,3 +1,7 @@
+## Class HodgkinHuxley implementing functions for setting all variables,
+## and for creating, solving and plotting the corresponding
+## differential equation (of the Hodgkin-Huxley model).
+
 import numpy as np
 import matplotlib.pyplot as plt
 import tools
@@ -45,25 +49,24 @@ class HodgkinHuxley:
         self.spc = self.R_m * self.a / (2 * self.R_c)
         self.tc = self.R_m * self.C_m
 
-        # Calculate factor for temperature correction which is used for opening and closing rates.
-        self.phi = 3 ** ((T - 6.3) / 10)
-        self.a_n = lambda V : self.phi * (0.01 * (10 - V) / (np.exp((10 - V)/10) - 1))
-        self.a_m = lambda V : self.phi * (0.1 * (25 - V) / (np.exp((25 - V)/10) - 1))
-        self.a_h = lambda V : self.phi * 0.07 * np.exp(-V/20)
-        self.b_n = lambda V : self.phi * 0.125 * np.exp(-V/80)
-        self.b_m = lambda V : self.phi * 4 * np.exp(-V/18)
-        self.b_h = lambda V : self.phi / (np.exp((30 - V)/10) + 1)
+        # Set parameters that can be changed by GUI.
+        self.run_time = 10
+        self.quick = False
+        self.num_method_time_steps = 0.0001
 
-        # Ionic current functions
-        self.I_L = lambda V : self.g_L * (V - self.V_L)
-        self.I_K = lambda V, n :  self.g_K * n ** 4 * (V - self.V_K)
-        self.I_Na = lambda V, m, h : self.g_Na * m ** 3 * h * (V - self.V_Na)
-        self.I_ion = lambda V, n, m, h : self.I_K(V, n) + self.I_Na(V, m, h) + self.I_L(V)
+        # Set parameters that can be changed by GUI and are meant for simulating
+        # one aciton potential.
+        self.set_temperature(T)
+        self.inject_current = 20
+        self.inj_start_time = 3
+        self.inj_end_time = 4
+
+        # Results, to be plotted...
+        self.results = ([], [])
 
     def I(self, t):
-        """Injected current as a function of time in uA/cm^2. """
-        return 20 * (3 < t < 4)
-
+        """Injected current as a function of time in nA/cm^2. """
+        return self.inject_current * (self.inj_start_time < t and t < self.inj_end_time)
 
     def diff_eq(self):
         """Returns function f such that the differential equations can be described as x' = f(t, x),
@@ -92,9 +95,50 @@ class HodgkinHuxley:
             return y
         return f
 
-    def solve_model(self, h, t, quick=False):
-        """Solves the model using RK4 with step size h, for time (at least) t. 
-        If quick parameter is true then forward Euler is used."""
+    def set_temperature(self, T):
+        """Setter for the temperature of the model."""
+        self.temperature = T
+        self.phi = 3 ** ((T - 6.3) / 10)
+        self.a_n = lambda V : self.phi * (0.01 * (10 - V) / (np.exp((10 - V)/10) - 1))
+        self.a_m = lambda V : self.phi * (0.1 * (25 - V) / (np.exp((25 - V)/10) - 1))
+        self.a_h = lambda V : self.phi * 0.07 * np.exp(-V/20)
+        self.b_n = lambda V : self.phi * 0.125 * np.exp(-V/80)
+        self.b_m = lambda V : self.phi * 4 * np.exp(-V/18)
+        self.b_h = lambda V : self.phi / (np.exp((30 - V)/10) + 1)
+
+        self.I_L = lambda V : self.g_L * (V - self.V_L)
+        self.I_K = lambda V, n :  self.g_K * n ** 4 * (V - self.V_K)
+        self.I_Na = lambda V, m, h : self.g_Na * m ** 3 * h * (V - self.V_Na)
+        self.I_ion = lambda V, n, m, h : self.I_K(V, n) + self.I_Na(V, m, h) + self.I_L(V)
+
+    def set_run_time(self, time):
+        """Setter for the run time of the model."""
+        self.run_time = time
+
+    def set_injection_data(self, inj_current, inj_start, inj_end):
+        """Setter for inject_current, inj_start_time, inj_end_time."""
+        self.inject_current = inj_current
+        self.inj_start_time = inj_start
+        self.inj_end_time = inj_end
+
+    def set_num_method(self, quick, steps):
+        """Setter for numerical method (quick=False --> RK4, quick=True --> Forward Euler)
+        and for time steps used by that method."""
+        self.quick = quick
+        self.num_method_time_steps = steps
+
+    def solve_model(self, h=None, t=None, quick=None):
+        """Solves the model using RK4 with step size h, for time (at least) t.
+        If quick paramter is true then forward Euler is used."""
+        # Default values for parameters.
+        if h is None:
+            h = self.num_method_time_steps
+        if t is None:
+            t = self.run_time
+        if quick is None:
+            quick = self.quick
+
+        # Calculate number of steps, differential equation and solve it.
         N = np.int(np.ceil(t/h))
         f = self.diff_eq()
         y0 = np.array([0, self.n0, self.m0, self.h0])
@@ -119,6 +163,8 @@ class HodgkinHuxley:
             sol = tools.fe(f, 0, y0, h, N)
         else:
             sol = tools.rk4(f, 0, y0, h, N)
+
+        self.results = sol
         return sol
     
     def find_speed(self, c_low, c_high, h, t, n, quick=False):
@@ -134,5 +180,21 @@ class HodgkinHuxley:
             while np.isnan(y[-i, 0]):
                 i += 1
             return y[-i, 0]
-
         return tools.bisect(g, c_low, c_high, n)
+        
+    def plot_results(self):
+        """This function plots the results of an action potential plot."""
+        t, y = self.results
+        assert len(t) == len(y[:,0])
+        title = (f"One neuron action potential. Voltage plotted against "
+        f"time, using temperature {self.temperature} degrees, "
+        f"injecting {self.inject_current} mV current "
+        f"from {self.inj_start_time} ms to {self.inj_end_time} ms. "
+        f"Numerical method {'Runge-Kutta-4' if self.quick == 0 else 'Forward-Euler'} "
+        f"with time steps {self.num_method_time_steps}.")
+
+        plt.title(title, wrap=True)
+        plt.xlabel("Time (ms)")
+        plt.ylabel("Voltage (mV)")
+        plt.plot(t, y[:,0], c='red')
+        plt.show()
