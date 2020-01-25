@@ -15,7 +15,7 @@ class HodgkinHuxley:
     h0: Initial probability of Na gate being inactivated
     V_Na, v_K, v_L: Reverse potential of Na / K / leakage channel (mV)
     g_Na, g_K, g_L: Maximum Na / K / leakage conductance (mS/cm^2)
-    a: diameter of fibre (cm)
+    a: diameter of fibre (10^-3 cm)
     R_m: Membrane resting resistance (10^3 Ohm cm^2)
     R_c: axoplasm resistivity (Ohm cm)
 
@@ -30,19 +30,19 @@ class HodgkinHuxley:
         self.n0 = 0.317
         self.m0 = 0.05
         self.h0 = 0.6
-        self.V0 = 0.1 # Small negative displacement is needed for dynamic model
+        self.V0 = -0.1 # Small negative displacement is needed for dynamic model
         self.V_Na =  50 - self.V_eq
         self.V_K = -77 - self.V_eq
         self.V_L = -54.4 - self.V_eq
         self.g_Na = 120
         self.g_K = 36
         self.g_L = 0.3
-        self.a = 0.0238 # 238 original HH article, 476 according to other article
+        self.a = 25 # 23.8 original HH article, 25 according to book
         self.R_m = 1
-        self.R_c = 35.4
+        self.R_c = 30 # 35.4 original HH article, 30 book
 
         # Space constant (cm^2) and time constant (ms).
-        self.spc = 1000 * self.R_m * self.a / (2 * self.R_c)
+        self.spc = self.R_m * self.a / (2 * self.R_c)
         self.tc = self.R_m * self.C_m
 
         # Calculate factor for temperature correction which is used for opening and closing rates.
@@ -61,7 +61,7 @@ class HodgkinHuxley:
         self.I_ion = lambda V, n, m, h : self.I_K(V, n) + self.I_Na(V, m, h) + self.I_L(V)
 
     def I(self, t):
-        """Injected current as a function of time in nA/cm^2. """
+        """Injected current as a function of time in uA/cm^2. """
         return 20 * (3 < t < 4)
 
 
@@ -78,20 +78,6 @@ class HodgkinHuxley:
             return y
         return f
 
-    # def diff_eq_dynamic(self, K):
-    #     """Returns function f such that the differential equations can be described as x' = f(t, x),
-    #     where x = [V, W, n, m, h]. W is a substitution variable for dV/dt. """
-    #     def f(t, x):
-    #         V, W, n, m, h = x
-    #         y = np.zeros(5)
-    #         y[0] = W
-    #         y[1] = K * (W + (self.I_K(V, n) + self.I_Na(V, m, h) + self.I_L(V)) / self.C_m)
-    #         y[2] = self.a_n(V) * (1 - n) - self.b_n(V) * n
-    #         y[3] = self.a_m(V) * (1 - m) - self.b_m(V) * m
-    #         y[4] = self.a_h(V) * (1 - h) - self.b_h(V) * h
-    #         return y
-    #     return f
-
     def diff_eq_dynamic(self, c):
         """Returns function f such that the differential equations can be described as x' = f(t, x),
         where x = [V, W, n, m, h]. W is a substitution variable for dV/dt. """
@@ -105,10 +91,6 @@ class HodgkinHuxley:
             y[4] = self.a_h(V) * (1 - h) - self.b_h(V) * h
             return y
         return f
-
-    # def speed_from_K(self, K):
-    #     """Return velocity in m/s from constant K. The factor 10 has to do with the units used for C and K."""
-    #     return 10 * np.sqrt(K * self.a / (2 * self.R_c * self.C_m))
 
     def solve_model(self, h, t, quick=False):
         """Solves the model using RK4 with step size h, for time (at least) t. 
@@ -138,15 +120,19 @@ class HodgkinHuxley:
         else:
             sol = tools.rk4(f, 0, y0, h, N)
         return sol
+    
+    def find_speed(self, c_low, c_high, h, t, n, quick=False):
+        """Finds propagation speed by calculating solution for guesses of c
+        and then using bisection.
+        NB Unit of c is cm/ms or dam/s. 
+        """
+        def g(c):
+            # Will most likely have NaN values due to overflow, want to find 
+            # last non-NaN value. 
+            _, y = self.solve_dynamic_model(h, t, c, quick)
+            i = 1
+            while np.isnan(y[-i, 0]):
+                i += 1
+            return y[-i, 0]
 
-if __name__ == "__main__":
-    x = HodgkinHuxley(18.5)
-    # t, y = x.solve_model(0.001, 30, False)
-    # plt.plot(t, y[:,0], label="simple")
-    c_guess = 1.55
-    t, y = x.solve_dynamic_model(0.001, 10, c_guess, False)
-    plt.plot(t, y[:,0], label="dynamic")
-    plt.legend()
-    
-    
-    plt.show()
+        return tools.bisect(g, c_low, c_high, n)

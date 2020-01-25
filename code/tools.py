@@ -30,3 +30,23 @@ def fe(f, t0, y0, h, N):
 def solve_quadratic(a, b, c):
     D = b ** 2 - 4 * a * c
     return (-b + np.sqrt(D)) / (2 * a), (-b - np.sqrt(D)) / (2 * a)
+
+def bisect(f, x_low, x_high, n):
+    """Apply bisection method n times to function f."""
+    s = np.sign(f(x_low))
+    t = np.sign(f(x_high))
+    if s == t:
+        # Betere manier nodig om error te gooien!
+        return "Error: f(x_low) and f(x_high) have same sign"
+
+    for _ in range(n):
+        x = (x_low + x_high) / 2
+        y = f(x)
+        print(x)
+        if y == 0:
+            return x
+        elif np.sign(y) == s:
+            x_low = x
+        else:
+            x_high = x
+    return (x_low + x_high) / 2
