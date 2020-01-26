@@ -8,6 +8,9 @@ import csv
 import os
 
 class CurrentParameters:
+    """Object to store parameters of and generate a normally distributed current function.
+    This function returns the strength for certain duration and 0 after that. 
+    The Strength (I) and duration (T) are both normally distributed."""
     def __init__(self, Imean = 20, Ivar = 3, Tmean = 1, Tvar = 0.5, start_time=0):
         """Store current paramters in object.
         Parameters:
@@ -42,6 +45,9 @@ class CurrentParameters:
 
 
 class TempExperiment:
+    """Class for an experiment measuring the effect of Temperature of action potential duration.
+    Uses Hodgekin Huxely model of a neuron and measures a single action potential at a time.
+    Has file management functions and a plot function."""
     def __init__(self, minTemp=6.3, maxTemp=46.3, tempSteps=10, model=hh.HodgkinHuxley(), tol=0.5, currentPar=None):
         """Initialize values used experiment.
         Parameters:

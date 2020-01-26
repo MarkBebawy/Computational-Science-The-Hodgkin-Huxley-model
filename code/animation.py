@@ -4,6 +4,8 @@ import hh
 from matplotlib.animation import FuncAnimation
 
 class Animation:
+    """Class used for matplotlib animation. 
+    Must be provided an array of frames (x_i,y_i). At a frame i, x_i is plotted against y_i."""
     def __init__(self, frames, xlim=(-1,1), ylim = (-1,1), frame_delay=200):
         """Creates animation object.
         Parameters:
