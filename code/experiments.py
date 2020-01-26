@@ -51,7 +51,7 @@ class TempExperiment:
             model of neuron
         - tol:
             tolerance used to distinguish from resting potential.
-            Given equilibrium potential Ve, we consider the range [V - tol, V + tol] to be resting potential
+            We consider the range [-tol, +tol] to be resting potential
         - currentPar:
             class containing current injection parameters."""
         self.minTemp = minTemp

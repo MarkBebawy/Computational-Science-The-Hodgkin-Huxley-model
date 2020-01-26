@@ -1,9 +1,26 @@
-## Tools for solving differential equations.
+## Tools for solving differential equations. Also includes a solver for quadratic
+## equations and a simple implementation of the bisection method. 
+
 import numpy as np
+
+def fe(f, t0, y0, h, N):
+    """"Solve IVP given by y' = f(t, y), y(t_0) = y_0 with step size h > 0, for N steps,
+    using the Forward-Euler method.
+    Also works if y is an n-vector and f is a vector-valued function."""
+    t = t0 + np.array([i * h for i in range(N+1)])
+    m = len(y0)
+    y = np.zeros((N+1, m))
+    y[0] = y0
+
+    # Repeatedly approximate next value.
+    for n in range(N):
+        y[n+1] = y[n] + h*f(t[n], y[n])
+    return t, y
 
 def rk4(f, t0, y0, h, N):
     """"Solve IVP given by y' = f(t, y), y(t_0) = y_0 with step size h > 0, for N steps,
-    using the Runge-Kutta 4 method."""
+    using the Runge-Kutta 4 method.
+    Also works if y is an n-vector and f is a vector-valued function."""
     t = t0 + np.array([i * h for i in range(N+1)])
     m = len(y0)
     y = np.zeros((N+1, m))
@@ -19,35 +36,21 @@ def rk4(f, t0, y0, h, N):
 
     return t, y
 
-def fe(f, t0, y0, h, N):
-    """"Solve IVP given by y' = f(t, y), y(t_0) = y_0 with step size h > 0, for N steps,
-    using the Forward-Euler method."""
-    t = t0 + np.array([i * h for i in range(N+1)])
-    m = len(y0)
-    y = np.zeros((N+1, m))
-    y[0] = y0
-
-    # Repeatedly approximate next value.
-    for n in range(N):
-        y[n+1] = y[n] + h*f(t[n], y[n])
-    return t, y
-
 def solve_quadratic(a, b, c):
+    """Returns the two solutions of the quadratic equation ax^2 + bx + c = 0."""
     D = b ** 2 - 4 * a * c
+    assert D >= 0
     return (-b + np.sqrt(D)) / (2 * a), (-b - np.sqrt(D)) / (2 * a)
 
 def bisect(f, x_low, x_high, n):
     """Apply bisection method n times to function f."""
     s = np.sign(f(x_low))
     t = np.sign(f(x_high))
-    if s == t:
-        # Betere manier nodig om error te gooien!
-        return "Error: f(x_low) and f(x_high) have same sign"
+    assert s != t
 
     for _ in range(n):
         x = (x_low + x_high) / 2
         y = f(x)
-        print(x)
         if y == 0:
             return x
         elif np.sign(y) == s:
