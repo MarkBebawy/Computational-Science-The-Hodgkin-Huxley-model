@@ -73,7 +73,7 @@ class ParamExperiment:
         else:
             self.currentPar = currentPar
 
-    def run(self, num_expr=3):
+    def run(self, num_expr=3, savefile=None):
         """This function runs the Hodgkin-Huxley model for different param_range
         and measures the time it takes to finish a single action potential."""
         param_range = np.linspace(self.min_param, self.max_param, self.param_steps)
@@ -102,6 +102,8 @@ class ParamExperiment:
 
         assert len(param_range) == len(durations_list)
         self.results = (param_range, durations_list)
+        if savefile:
+            self.store_csv(savefile)
         return self.results
 
     def genCurrent(self):
@@ -266,13 +268,14 @@ class TempExperiment(ParamExperiment):
         super().__init__(update_func, min_param=min_temp, max_param=max_temp, param_steps=temp_steps, \
             model=model, tol=tol, currentPar=currentPar)
     
-    def set_temp_exp_data(self, min_temp, max_temp, steps, eps, model):
+    def set_temp_exp_data(self, min_temp, max_temp, steps, eps, model, curr_params):
         """This function sets the temperature experiment variables."""
         self.min_param = min_temp
         self.max_param = max_temp
         self.param_steps = steps
         self.tol = eps
         self.model = model
+        self.currentPar = curr_params
 
     def plot(self, title="", xlabel="Temperature (degrees celsius)", ylabel="Action potential duration (ms)", poly_range=[]):
         """Plots the values stored: duration of action potential against

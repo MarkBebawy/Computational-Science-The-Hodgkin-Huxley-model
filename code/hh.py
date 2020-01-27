@@ -189,15 +189,16 @@ class HodgkinHuxley:
             ys[i] = y[:,0]
         return t, ys
     
-    def plot_multiple_ap(self, temps):
+    def plot_multiple_ap(self, t_min, t_max, num_temps):
         # TODO: use coolwarm diverging colormap
         t, ys = self.run_multiple_ap(temps)
         for i, y in enumerate(ys):
             plt.plot(t, y, label=f"{temps[i]} degrees")
         plt.legend()
-        plt.title("TODO titel")
+        plt.title(f"Shape of action potential for {num_temps} temperatures "
+        f"between {t_min} and {t_max}")
         plt.xlabel("Temperature (degrees celsius)")
-        plt.ylabel("Voltage (mV)")
+        plt.ylabel("Deviation from V_eq (mV)")
         plt.show()
 
     def solve_dynamic_model(self, h, t, c, quick=False):
@@ -252,7 +253,7 @@ class HodgkinHuxley:
 
         plt.title(title, wrap=True)
         plt.xlabel("Time (ms)")
-        plt.ylabel("Voltage (mV)")
+        plt.ylabel("Deviation from V_eq (mV)")
         plt.plot(t, y[:,0], c='red')
         plt.show()
 
