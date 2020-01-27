@@ -218,6 +218,33 @@ class ParamExperiment:
                 y.append(duration)
         return np.polynomial.Polynomial.fit(x,y,degree)
 
+    def fit_degree(self):
+        """Fits formula of form y = c*x^n. 
+        All values must be greater than 0 or None will be returned."""
+        # Format results for polynomial fit
+        param_range, durations_list = self.results
+        x = []
+        y = []
+        for durations, param_val in zip(durations_list, param_range):
+            for duration in durations:
+                x.append(param_val)
+                y.append(duration)
+
+        # Take log and return if 0
+        if 0 in x or 0 in y:
+            return 
+        x = np.array(x)
+        y = np.array(y)
+        lx = np.log(x)
+        ly = np.log(y)
+
+        # By assumption log(y) = n log(x) + log(c)
+        coefs = np.polyfit(x,y)
+        
+        # Return n, c
+        return coefs[0], np.exp(coefs[1])
+
+
 class TempExperiment(ParamExperiment):
     """Class for an experiment measuring the effect of Temperature of action potential duration.
     Uses Hodgekin Huxely model of a neuron and measures a single action potential at a time.
