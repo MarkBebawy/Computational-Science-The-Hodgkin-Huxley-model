@@ -32,25 +32,35 @@ class Animation:
         # Frame range is a list of integers as they will be used to index.
         frame_range = np.arange(len(self.frames))
 
-        animation = FuncAnimation(fig, func=self.frame_function, frames = frame_range, interval=self.frame_delay, repeat = False)
+        animation = FuncAnimation(fig, func=self.frame_function, frames = frame_range, interval=self.frame_delay, repeat = False,blit=True)
         plt.show()
     
     def frame_function(self, i):
         """Function used in FuncAnimation.
         Returns tuple with line to be plotted."""
         x_data, y_data = self.frames[i]
+        #print(len(x_data))
         self.ln.set_xdata(x_data)
         self.ln.set_ydata(y_data)
         return self.ln,
 
 if __name__ == "__main__":
-    # Test plotting a sinewave
-    x = np.linspace(0, 4*np.pi, 1000)
-    frames = []
-    for mag in np.linspace(1, -1, 100):
-        y = mag*np.sin(x)
-        frame = (x,y)
-        frames.append(frame)
+    # Plot hodgkin huxley model
+    neuron = hh.HodgkinHuxley()
+    neuron.quick=True
+    neuron.run_time = 20
+    neuron.num_method_time_steps = 0.025
 
-    Ani = Animation(frames=frames, frame_delay=80, xlim = (0,4*np.pi))
+    # Retrieve data to be plotted.
+    t, y = neuron.solve_model()
+    volts = y[:,0]
+    frames = [(t[:n],volts[:n]) for n in range(len(volts))]
+
+    # Set plottting limits
+    y_scaling = 1.2
+    xlim = (t[0],t[-1])
+    ylim = (y_scaling*min(volts),y_scaling*max(volts))
+
+    # Start animation
+    Ani = Animation(frames=frames, frame_delay=10, xlim = xlim, ylim = ylim)
     Ani.start()

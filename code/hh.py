@@ -97,6 +97,19 @@ class HodgkinHuxley:
         self.I_K = lambda V, n :  self.g_K * n ** 4 * (V - self.V_K)
         self.I_Na = lambda V, m, h : self.g_Na * m ** 3 * h * (V - self.V_Na)
 
+    def update_parameters(self):
+        """Updates parameters dependent on other parameters."""
+        self.phi = 3 ** ((self.temperature - 6.3) / 10)
+        self.a_n = lambda V : self.phi * (0.01 * (-V + self.V_eq + 10) / (np.exp((-V + self.V_eq + 10)/10) - 1))
+        self.a_m = lambda V : self.phi * (0.1 * (-V + self.V_eq + 25) / (np.exp((-V + self.V_eq + 25)/10) - 1))
+        self.a_h = lambda V : self.phi * 0.07 * np.exp((-V + self.V_eq)/20)
+        self.b_n = lambda V : self.phi * 0.125 * np.exp((-V + self.V_eq)/80)
+        self.b_m = lambda V : self.phi * 4 * np.exp((-V + self.V_eq)/18)
+        self.b_h = lambda V : self.phi / (np.exp(((-V + self.V_eq) + 30)/10) + 1)
+        self.I_L = lambda V : self.g_L * (V - self.V_L)
+        self.I_K = lambda V, n :  self.g_K * n ** 4 * (V - self.V_K)
+        self.I_Na = lambda V, m, h : self.g_Na * m ** 3 * h * (V - self.V_Na)
+
     def set_run_time(self, time):
         """Setter for the run time of the model."""
         self.run_time = time
@@ -152,3 +165,9 @@ class HodgkinHuxley:
         plt.ylabel("Voltage (mV)")
         plt.plot(t, y[:,0], c='red')
         plt.show()
+
+if __name__ == "__main__":
+    x = HodgkinHuxley()
+    x.quick=True
+    x.solve_model()
+    x.plot_results()
