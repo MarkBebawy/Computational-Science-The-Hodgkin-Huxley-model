@@ -34,7 +34,7 @@ class HodgkinHuxley:
         self.n0 = 0.317
         self.m0 = 0.05
         self.h0 = 0.6
-        self.V0 = -0.1 # Small negative displacement is needed for dynamic model
+        self.V0 = 0.1 # Small negative displacement is needed for dynamic model
         self.V_Na =  50 - self.V_eq
         self.V_K = -77 - self.V_eq
         self.V_L = -54.4 - self.V_eq
@@ -150,6 +150,29 @@ class HodgkinHuxley:
         self.results = sol
         return sol
     
+    def run_multiple_ap(self, temps):
+        """TODO documentatie :))"""
+        N = np.int(np.ceil(self.run_time/self.num_method_time_steps))
+        num = len(temps)
+        t = np.array([i * self.num_method_time_steps for i in range(N+1)])
+        ys = np.zeros((num, N+1))
+        for i, T in enumerate(temps):
+            self.set_temperature(T)
+            ts, y = self.solve_model()
+            ys[i] = y[:,0]
+        return t, ys
+    
+    def plot_multiple_ap(self, temps):
+        # TODO: use coolwarm diverging colormap
+        t, ys = self.run_multiple_ap(temps)
+        for i, y in enumerate(ys):
+            plt.plot(t, y, label=f"{temps[i]} degrees")
+        plt.legend()
+        plt.title("TODO titel")
+        plt.xlabel("Temperature (degrees celsius)")
+        plt.ylabel("Voltage (mV)")
+        plt.show()
+
     def solve_dynamic_model(self, h, t, c, quick=False):
         """Solves dynamic model using RK4 with step size h, for time (at least) t.
         If quick parameter is true then forward Euler is used.
@@ -203,3 +226,8 @@ class HodgkinHuxley:
         plt.ylabel("Voltage (mV)")
         plt.plot(t, y[:,0], c='red')
         plt.show()
+
+if __name__ == "__main__":
+    x = HodgkinHuxley()
+    temps = [-15, -10, -5, 0, 5, 10, 15, 20, 25]
+    x.plot_multiple_ap(temps)
