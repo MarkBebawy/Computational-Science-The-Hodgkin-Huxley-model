@@ -58,7 +58,7 @@ class ValidationExperiment:
         plt.ylabel(ylabel)
 
         # Make positive points green.
-        colorvec = ['green' if val > 0 else 'red' for val in maxima]
+        colorvec = ['green' if val > 65 else 'red' for val in maxima]
         plt.scatter(current_range, maxima, c=colorvec)
         plt.show()
 
