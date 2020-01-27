@@ -95,6 +95,15 @@ class HodgkinHuxley:
         self.b_n = lambda V : self.phi * 0.125 * np.exp(-V/80)
         self.b_m = lambda V : self.phi * 4 * np.exp(-V/18)
         self.b_h = lambda V : self.phi / (np.exp((30 - V)/10) + 1)
+
+
+    def update_parameters(self):
+        """Updates parameters dependent on other parameters."""
+        self.set_temperature(self.temperature)
+        self.I_L = lambda V : self.g_L * (V - self.V_L)
+        self.I_K = lambda V, n :  self.g_K * n ** 4 * (V - self.V_K)
+        self.I_Na = lambda V, m, h : self.g_Na * m ** 3 * h * (V - self.V_Na)
+        self.I_ion = lambda V, n, m, h : self.I_K(V, n) + self.I_Na(V, m, h) + self.I_L(V)
     
     def I(self, t):
         """Injects a current of inject_current uA/cm^2 between inj_start_time and inj_end_time. """
@@ -127,6 +136,7 @@ class HodgkinHuxley:
             y[4] = self.a_h(V) * (1 - h) - self.b_h(V) * h
             return y
         return f
+
 
     def set_run_time(self, time):
         """Setter for the run time of the model."""
