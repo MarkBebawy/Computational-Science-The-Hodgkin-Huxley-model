@@ -67,7 +67,7 @@ class Validation:
 
     def run_time2_val(value):
         """This function validates the input of the run time (option 2) entry."""
-        return value.isdigit() and 0 < int(value) and int(value) <= 10
+        return value.isdigit() and 0 < int(value) and int(value) <= 50
 
     def inj_mean_val(value):
         """This function validates the input of the mean injection current strength."""
@@ -138,7 +138,7 @@ def setup_start(screen):
                     ('temp_steps', '10', 'Amount of experiments points in\ntemperature range, integer between 1 and 100'),
                     ('rest_pot_eps', '10', 'Tolerance for resting potential, interval (0, 15]'),
                     ('num_exps', '3', 'Number of iterations per temperature, integer in [1, 30]'),
-                    ('run_time2', '10', 'Run time per experiment (miliseconds, interval (0, 10])')]
+                    ('run_time2', '10', 'Run time per experiment (miliseconds, interval (0, 50])')]
 
     welcome_str = ("Welcome to the Hodgkin-Huxley GUI.\n\nOption 1: One action potential "
         "can be simulated and plotted.\nOption 2: Temperature experiments "
