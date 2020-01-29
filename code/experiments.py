@@ -1,5 +1,6 @@
-## TempExperiment class for running temperature experiments, using
-## current injection parameters from CurrentParameters class.
+## ParamExperiment class for running experiments by changing
+## a certain parameter, using current injection parameters
+## from CurrentParameters class.
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -9,7 +10,7 @@ import os
 
 class CurrentParameters:
     """Object to store parameters of and generate a normally distributed current function.
-    This function returns the strength for certain duration and 0 after that. 
+    This function returns the strength for certain duration and 0 after that.
     The Strength (I) and duration (T) are both normally distributed."""
     def __init__(self, Imean = 20, Ivar = 3, Tmean = 1, Tvar = 0.5, start_time=0):
         """Store current paramters in object.
@@ -221,7 +222,7 @@ class ParamExperiment:
         return np.polynomial.Polynomial.fit(x,y,degree)
 
     def fit_degree(self):
-        """Fits formula of form y = c*x^n. 
+        """Fits formula of form y = c*x^n.
         All values must be greater than 0 or None will be returned."""
         # Format results for polynomial fit
         param_range, durations_list = self.results
@@ -242,7 +243,7 @@ class ParamExperiment:
 
         # By assumption log(y) = n log(x) + log(c)
         coefs = np.polyfit(x,y,1)
-        
+
         # Return n, c
         return coefs[0], np.exp(coefs[1])
 
@@ -267,7 +268,7 @@ class TempExperiment(ParamExperiment):
             neuron.set_temperature(value)
         super().__init__(update_func, min_param=min_temp, max_param=max_temp, param_steps=temp_steps, \
             model=model, tol=tol, currentPar=currentPar)
-    
+
     def set_temp_exp_data(self, min_temp, max_temp, steps, eps, model, curr_params):
         """This function sets the temperature experiment variables."""
         self.min_param = min_temp

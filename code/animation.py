@@ -47,6 +47,7 @@ class Animation:
         """Function used in FuncAnimation.
         Returns tuple with line to be plotted."""
         x_data, y_data = self.frames[i]
+        assert len(x_data) == len(y_data)
         self.ln.set_xdata(x_data)
         self.ln.set_ydata(y_data)
         return self.ln,
@@ -61,12 +62,13 @@ if __name__ == "__main__":
     # Retrieve data to be plotted.
     t, y = neuron.solve_model()
     volts = y[:,0]
+    assert len(t) == len(y)
     frames = [(t[:n],volts[:n]) for n in range(len(volts))]
 
     # Set plottting limits
     y_scaling = 1.2
     xlim = (t[0],t[-1])
-    ylim = (y_scaling*min(volts),y_scaling*max(volts))
+    ylim = (y_scaling*min(volts), y_scaling*max(volts))
 
     # Start animation
     Ani = Animation(frames=frames, frame_delay=10, xlim = xlim, ylim = ylim)
