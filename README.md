@@ -15,6 +15,7 @@ Our implementation of the Hodgkin-Huxley model, experiments on and verification 
 this model, and a GUI to run these experiments and use different parameters.
 
 *Execution is done by navigating to this folder and running 'python3 gui.py'.*
+*Note: if the loading of the screen takes too long, use Ctrl+C and run it again.*
 This opens a GUI where parameters can be filled and different experiments can be run,
 namely the simulation of one action potential, the running of temperature experiments
 and the verification of the model. See the GUI for details.
