@@ -78,9 +78,9 @@ class HodgkinHuxley:
         # Set parameters that can be changed by GUI and are meant for simulating
         # one action potential.
         self.set_temperature(T)
-        self.inject_current = 20
-        self.inj_start_time = 3
-        self.inj_end_time = 4
+        self.inject_current = 200
+        self.inj_start_time = 0.5
+        self.inj_end_time = 0.7
 
         # Results, to be plotted...
         self.results = ([], [])
@@ -179,11 +179,13 @@ class HodgkinHuxley:
     
     def run_multiple_ap(self, temps):
         """TODO documentatie :))"""
+        print(f"Running temps {temps}")
         N = np.int(np.ceil(self.run_time/self.num_method_time_steps))
         num = len(temps)
         t = np.array([i * self.num_method_time_steps for i in range(N+1)])
         ys = np.zeros((num, N+1))
         for i, T in enumerate(temps):
+            print(f"Running {T} degrees")
             self.set_temperature(T)
             ts, y = self.solve_model()
             ys[i] = y[:,0]
@@ -191,13 +193,14 @@ class HodgkinHuxley:
     
     def plot_multiple_ap(self, t_min, t_max, num_temps):
         # TODO: use coolwarm diverging colormap
+        temps = np.linspace(t_min, t_max, num_temps)
         t, ys = self.run_multiple_ap(temps)
         for i, y in enumerate(ys):
             plt.plot(t, y, label=f"{temps[i]} degrees")
         plt.legend()
         plt.title(f"Shape of action potential for {num_temps} temperatures "
         f"between {t_min} and {t_max}")
-        plt.xlabel("Temperature (degrees celsius)")
+        plt.xlabel("Time (milliseconds)")
         plt.ylabel("Deviation from V_eq (mV)")
         plt.show()
 
@@ -260,4 +263,5 @@ class HodgkinHuxley:
 if __name__ == "__main__":
     x = HodgkinHuxley()
     temps = [-15, -10, -5, 0, 5, 10, 15, 20, 25]
-    x.plot_multiple_ap(temps)
+    x.solve_model()
+    x.plot_results()
