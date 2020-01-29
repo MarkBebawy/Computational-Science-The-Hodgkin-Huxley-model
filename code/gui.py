@@ -35,11 +35,11 @@ class Validation:
 
     def inj_start_val(value):
         """This function validates the input of the start time current injection entry."""
-        return Validation.is_float() and 0 <= float(value)
+        return Validation.is_float(value) and 0 <= float(value)
 
     def inj_end_val(value):
         """This function validates the input of the end time for current injection entry."""
-        return Validation.is_float() and 0 <= float(value)
+        return Validation.is_float(value) and 0 <= float(value)
 
     def temp_val(value):
         """This function validates the temperature entry."""
@@ -47,7 +47,7 @@ class Validation:
 
     def run_time1_val(value):
         """This function validates the run time entry."""
-        return Validation.is_float() and 0 < float(value) and float(value) <= 100
+        return Validation.is_float(value) and 0 < float(value) and float(value) <= 100
 
     ## Option 2
     def min_temp_val(value):
@@ -68,7 +68,7 @@ class Validation:
 
     def run_time2_val(value):
         """This function validates the input of the run time (option 2) entry."""
-        return Validation.is_float() and 0 < float(value) and float(value) <= 50
+        return Validation.is_float(value) and 0 < float(value) and float(value) <= 50
 
     def inj_mean_val(value):
         """This function validates the input of the mean injection current strength."""
@@ -88,7 +88,7 @@ class Validation:
 
     def i_start_time_val(value):
         """This function validates the input of the injection start time."""
-        return Validation.is_float() and 0 <= float(value)
+        return Validation.is_float(value) and 0 <= float(value)
 
     def num_exps_val(value):
         """This function validates the input of the number of experiment iterations."""
