@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import experiments as expy
 import validation as vali
 import hh
+import os
 
 ########### Entry validation functions to assert valid input values ################
 class Validation:
@@ -92,6 +93,10 @@ class Validation:
     def num_exps_val(value):
         """This function validates the input of the number of experiment iterations."""
         return value.isdigit() and 1 <= int(value) and int(value) <= 30
+
+    def file_name_val(value):
+        """All strings are valid file names."""
+        return True
 ########### -------------------------- ################
 
 
@@ -122,7 +127,7 @@ def setup_start(screen):
     widgets."""
     # Strings, keys and default values for all fields.
     settings_general = [('quick', '1', 'Numerical method (RK4=0, Forw. Euler=1)'),
-                        ('num_method_steps', '0.0001', 'Size of time steps for\nnumerical method (in interval (0, 10])')]
+                        ('num_method_steps', '0.001', 'Size of time steps for\nnumerical method (in interval (0, 10])')]
     settings_op1 = [('inj_current', '20', 'Amount of injected current (range 0 - 150)'),
                     ('inj_start', '3', 'Start time for current injection'),
                     ('inj_end', '4', 'End time for current injection'),
@@ -138,8 +143,9 @@ def setup_start(screen):
                     ('temp_steps', '10', 'Amount of experiments points in\ntemperature range, integer between 1 and 100'),
                     ('rest_pot_eps', '10', 'Tolerance for resting potential, interval (0, 15]'),
                     ('num_exps', '3', 'Number of iterations per temperature, integer in [1, 30]'),
-                    ('run_time2', '10', 'Run time per experiment (miliseconds, interval (0, 50])')]
-
+                    ('run_time2', '10', 'Run time per experiment (miliseconds, interval (0, 50])'),
+                    ('file_name', '', ('File name to store/load results (empty: no results saved)\n'
+                                       'Only enter names of files stored in \'stored_figs/\''))]
     welcome_str = ("Welcome to the Hodgkin-Huxley GUI.\n\nOption 1: One action potential "
         "can be simulated and plotted.\nOption 2: Temperature experiments "
         "can be run.\nModel verification shows model obeys all-or-nothing principle.\n\n"
@@ -238,7 +244,7 @@ def sim_temp(entries_gen, entries_op2):
         print("Running temperature experiments. This could take some time...")
 
         model = hh.HodgkinHuxley()
-        curr_params = expy.CurrentParameters()        
+        curr_params = expy.CurrentParameters()
         temp_exp = expy.TempExperiment()
 
         # Set parameters
@@ -250,9 +256,14 @@ def sim_temp(entries_gen, entries_op2):
                                 float(entries_op2['dur_mean'].get()), float(entries_op2['dur_var'].get()),
                                 int(entries_op2['i_start_time'].get()))
         model.set_run_time(int(entries_op2['run_time2'].get()))
+        file_path = str(entries_op2['file_name'].get())
 
         # Simulate model and show plot.
         temp_exp.run(int(entries_op2['num_exps'].get()))
+
+        # Store results in csv file, if file name specified.
+        if file_path:
+            temp_exp.store_csv("stored_figs/" + file_path)
         temp_exp.plot()
     print("------------------------------------------------------")
 
@@ -263,6 +274,26 @@ def model_verification():
     ver_mod = vali.ValidationExperiment()
     ver_mod.run()
     ver_mod.plot()
+    print("------------------------------------------------------")
+
+
+def plot_temp(entries_gen, entries_op2):
+    """This function plots the temperature experiments and shows a plot,
+    using the parameters enterded by the user."""
+    print("Plotting temperature experiments...")
+
+    # Check if file path exists.
+    file_path = 'stored_figs/' + str(entries_op2['file_name'].get())
+    if not os.path.isfile(file_path):
+        print(f"ERROR: File {file_path} does not exist!")
+        return
+
+    temp_exp = expy.TempExperiment()
+
+
+    # Load results from csv file and plot figure.
+    temp_exp.load_csv(file_path)
+    temp_exp.plot()
     print("------------------------------------------------------")
 
 
@@ -277,8 +308,10 @@ def mainloop():
     tk.Button(screen, text='Quit', command=quit).pack(side=tk.LEFT, padx=5, pady=5)
     tk.Button(screen, text='Option 1\nSimulate action potential',
         command=(lambda e1=entries_gen, e2=entries_op1: sim_AP(e1, e2))).pack(side=tk.LEFT, padx=5, pady=5)
-    tk.Button(screen, text='Option 2\nRun temperature experiments',
+    tk.Button(screen, text='Option 2\nRun and plot temperature experiments',
         command=(lambda e1=entries_gen, e2=entries_op2: sim_temp(e1, e2))).pack(side=tk.LEFT, padx=5, pady=5)
+    tk.Button(screen, text='Option 2\nPlot temperature experiments',
+        command=(lambda e1=entries_gen, e2=entries_op2: plot_temp(e1, e2))).pack(side=tk.LEFT, padx=5, pady=5)
     tk.Button(screen, text='Model verification', command=model_verification).pack(side=tk.LEFT, padx=5, pady=5)
     screen.mainloop()
 

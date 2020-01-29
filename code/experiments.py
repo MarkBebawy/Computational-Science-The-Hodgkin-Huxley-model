@@ -10,16 +10,24 @@ import os
 
 class CurrentParameters:
     """Object to store parameters of and generate a normally distributed current function.
-    This function returns the strength for certain duration and 0 after that.
-    The Strength (I) and duration (T) are both normally distributed."""
+    This current function returns the strength from a start time for certain duration and
+    returns 0 outside that interval. The current strength (I) and duration (T) are both
+    normally distributed."""
     def __init__(self, Imean = 20, Ivar = 3, Tmean = 1, Tvar = 0.5, start_time=0):
         """Store current paramters in object.
         Parameters:
         - Imean: mean current strength,
         - Ivar: variance of current strength,
-        - Tmean: mean time,
+        - Tmean: mean injection time,
         - Tvar: time variance
+        - start_time: starting injection time
         """
+        assert Imean >= 0
+        assert Ivar >= 0
+        assert Tmean >= 0
+        assert Tvar >= 0
+        assert start_time >= 0
+
         self.Imean = Imean
         self.Ivar = Ivar
         self.Tmean = Tmean
@@ -30,6 +38,8 @@ class CurrentParameters:
         """Return a current function with normally distributed time and strength."""
         strength = np.random.normal(self.Imean, self.Ivar)
         duration = np.random.normal(self.Tmean, self.Tvar)
+
+        # Only allow non-negative strength and duration.
         strength = max(strength, 0)
         duration = max(duration, 0)
         def I(t):
