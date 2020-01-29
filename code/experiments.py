@@ -1,5 +1,6 @@
-## TempExperiment class for running temperature experiments, using
-## current injection parameters from CurrentParameters class.
+## ParamExperiment class for running experiments by changing
+## a certain parameter, using current injection parameters
+## from CurrentParameters class.
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -9,26 +10,26 @@ import os
 
 class CurrentParameters:
     """Object to store parameters of and generate a normally distributed current function.
-    This function returns the strength for certain duration and 0 after that. 
-    The Strength (I) and duration (T) are both normally distributed."""
+    This current function returns the strength from a start time for certain duration and
+    returns 0 outside that interval. The current strength (I) and duration (T) are both
+    normally distributed."""
     def __init__(self, Imean = 20, Ivar = 3, Tmean = 1, Tvar = 0.5, start_time=0):
         """Store current paramters in object.
         Parameters:
         - Imean: mean current strength,
         - Ivar: variance of current strength,
-        - Tmean: mean time,
+        - Tmean: mean injection time,
         - Tvar: time variance
+        - start_time: starting injection time
         """
-        self.Imean = Imean
-        self.Ivar = Ivar
-        self.Tmean = Tmean
-        self.Tvar = Tvar
-        self.start_time = start_time
+        self.set_curr_data(Imean, Ivar, Tmean, Tvar, start_time)
 
     def genCurrent(self):
         """Return a current function with normally distributed time and strength."""
         strength = np.random.normal(self.Imean, self.Ivar)
         duration = np.random.normal(self.Tmean, self.Tvar)
+
+        # Only allow non-negative strength and duration.
         strength = max(strength, 0)
         duration = max(duration, 0)
         def I(t):
@@ -37,6 +38,12 @@ class CurrentParameters:
 
     def set_curr_data(self, Imean, Ivar, Tmean, Tvar, start):
         """Setter for all instance variables."""
+        assert Imean >= 0
+        assert Ivar >= 0
+        assert Tmean >= 0
+        assert Tvar >= 0
+        assert start >= 0
+
         self.Imean = Imean
         self.Ivar = Ivar
         self.Tmean = Tmean
@@ -46,9 +53,11 @@ class CurrentParameters:
 class ParamExperiment:
     """Experiment class that tests the effect of a given paramter on action potential duration.
         Makes use of normally distributed current."""
-    def __init__(self,update_param, min_param=6.3, max_param=46.3, param_steps=10, model=hh.HodgkinHuxley(), tol=0.5, currentPar=None):
+    def __init__(self, update_param, min_param=6.3, max_param=46.3, param_steps=10, model=hh.HodgkinHuxley(), tol=0.5, currentPar=None):
         """Initialize values used experiment.
         Parameters:
+        - update_param:
+            function that updates the desired paramater (takes HodgkinHuxley and param value)
         - min_param, max_param, param_steps:
             Used for parameter range in which to test.
         - model:
@@ -57,9 +66,7 @@ class ParamExperiment:
             tolerance used to distinguish from resting potential.
             We consider the range [-tol, +tol] to be resting potential
         - currentPar:
-            class containing current injection parameters.
-        - update_param:
-            function that updates the desired paramater (takes HodgkinHuxley and param value)"""
+            class containing current injection parameters."""
         self.min_param = min_param
         self.max_param = max_param
         self.update_param = update_param
@@ -74,21 +81,20 @@ class ParamExperiment:
             self.currentPar = currentPar
 
     def run(self, num_expr=3, savefile=None):
-        """This function runs the Hodgkin-Huxley model for different param_range
+        """This function runs the Hodgkin-Huxley model for different parameter values
         and measures the time it takes to finish a single action potential."""
         param_range = np.linspace(self.min_param, self.max_param, self.param_steps)
         print(f"Running action potential for param_range: {param_range}")
 
-        # durations_list should be a 2d array with multiple values for each paramerature.
+        # durations_list should be a 2d array with multiple values for each parameter.
         durations_list = []
         model = self.model
         rest_pot = model.V_eq
 
-        # Determine AP duration for each paramerature
+        # Determine AP duration for each parameter
         for val in param_range:
             print(f"Running value: {val} ...")
             self.update_param(model, val)
-            #model.update_parameters()
             durations = []
 
             # Run each parameter multiple times, for statistical confidence.
@@ -141,7 +147,7 @@ class ParamExperiment:
             return t[end_index] - t[start_index]
 
     def set_param_exp_data(self, min_param, max_param, steps, eps, model):
-        """This function sets the paramerature experiment variables."""
+        """This function sets the parameter experiment variables."""
         self.min_param = min_param
         self.max_param = max_param
         self.param_steps = steps
@@ -183,7 +189,10 @@ class ParamExperiment:
         plt.show()
 
     def store_csv(self, file_name):
-        """Stores results in csv file."""
+        """Stores results in csv file.
+        File format:
+         - column 0: parameter value
+         - column > 0: AP durations"""
         param_range, durations_list = self.results
         assert len(param_range) == len(durations_list)
         with open(file_name, 'w', newline='') as csvfile:
@@ -192,7 +201,10 @@ class ParamExperiment:
                 writer.writerow([val, *ap])
 
     def load_csv(self, file_name):
-        """Loads results from csv file."""
+        """Loads results from csv file.
+        File format:
+         - column 0: parameter value
+         - column > 0: AP durations"""
         assert os.path.isfile(file_name)
 
         param_range = []
@@ -221,7 +233,7 @@ class ParamExperiment:
         return np.polynomial.Polynomial.fit(x,y,degree)
 
     def fit_degree(self):
-        """Fits formula of form y = c*x^n. 
+        """Fits formula of form y = c*x^n.
         All values must be greater than 0 or None will be returned."""
         # Format results for polynomial fit
         param_range, durations_list = self.results
@@ -242,7 +254,7 @@ class ParamExperiment:
 
         # By assumption log(y) = n log(x) + log(c)
         coefs = np.polyfit(x,y,1)
-        
+
         # Return n, c
         return coefs[0], np.exp(coefs[1])
 
@@ -257,19 +269,19 @@ class TempExperiment(ParamExperiment):
         - minTemp, maxTemp, tempsteps:
             Used for temperature range in which to test.
         - model:
-            model of neuron
+            model of neuron (HodgkinHuxley object)
         - tol:
             tolerance used to distinguish from resting potential.
             Given equilibrium optential Ve, we consider the range [V - tol, V + tol] to be resting potential
         - currentPar:
-            class containing current injection parameters."""
+            object containing current injection parameters."""
         def update_func(neuron, value):
             neuron.set_temperature(value)
         super().__init__(update_func, min_param=min_temp, max_param=max_temp, param_steps=temp_steps, \
             model=model, tol=tol, currentPar=currentPar)
-    
+
     def set_temp_exp_data(self, min_temp, max_temp, steps, eps, model, curr_params):
-        """This function sets the temperature experiment variables."""
+        """This function sets/updates the temperature experiment variables."""
         self.min_param = min_temp
         self.max_param = max_temp
         self.param_steps = steps
@@ -288,28 +300,3 @@ class TempExperiment(ParamExperiment):
                      f"{self.currentPar.Ivar} and {self.currentPar.Tvar} respectively.")
 
         super().plot( title=title, xlabel=xlabel, ylabel=ylabel, poly_range=poly_range)
-
-
-if __name__ == "__main__":
-    # def update_func(model, value):
-    #     model.m0 = value
-    #     #model.update_parameters()
-    # model = hh.HodgkinHuxley()
-    # model.quick=True
-    # model.run_time=100
-    # model.num_method_time_steps=0.001
-    # PE = ParamExperiment(update_param=update_func, min_param=0.01, max_param=0.1, param_steps=10, model=model)
-    # PE.run(num_expr=2)
-    # PE.store_csv()
-    # poly = PE.fit_poly(5)
-    # PE.plot()
-
-    model = hh.HodgkinHuxley()
-    model.quick=True
-    model.run_time=30
-    model.num_method_time_steps=0.001
-    TE=TempExperiment(model=model)
-    #TE.run(num_expr=8)
-    TE.load_csv("testfile")
-    TE.plot(poly_range=[1,2,3,4,5])
-    print(TE.fit_degree())

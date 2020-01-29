@@ -8,10 +8,10 @@ import tools
 
 class HodgkinHuxley:
     """
-    Class which stores parameters of HH model. The HH model describes membrane voltage within a neuron during an 
+    Class which stores parameters of HH model. The HH model describes membrane voltage within a neuron during an
     action potential and propagation of an action potential - in this case in the squid giant axon.
-    The used default values are taken from the book Mathematical Physiology by Keener and Sneyd (2nd edition). 
-    All voltages (apart from V_eq) denote deviation from resting potential. 
+    The used default values are taken from the book Mathematical Physiology by Keener and Sneyd (2nd edition).
+    All voltages (apart from V_eq) denote deviation from resting potential.
 
     Attributes:
         *Biological constants and functions*
@@ -31,7 +31,7 @@ class HodgkinHuxley:
         I_L, I_K, I_na: Current density Na / K / leakage channel (uA/cm^2)
         I_ion: Total ionic current (sum of I_L, I_K, I_Na) (uA/cm^2)
 
-        *Functions which depend on temperature* 
+        *Functions which depend on temperature*
         T: Temperature in degrees Celcius
         phi: Factor for temperature correction
         a_n, a_m, a_h: Opening rate of m, n, h gates (kHz)
@@ -42,8 +42,8 @@ class HodgkinHuxley:
         quick: determines whether FE (True) or RK4 (False) is used for solving differential equations
         num_method_time_steps: size of time steps for FE/RK4 (ms)
         inject_current: amount of injected current (uA/cm^2)
-        inj_start_time, inj_end_time: starting / ending time of current injection (ms) 
-        results: tuple where first element is list of times and second is array of voltage data. 
+        inj_start_time, inj_end_time: starting / ending time of current injection (ms)
+        results: tuple where first element is list of times and second is array of voltage data.
     """
     def __init__(self, T=6.3):
         """Initialises variables of model corresponding to the given temperature."""
@@ -104,13 +104,13 @@ class HodgkinHuxley:
         self.I_K = lambda V, n :  self.g_K * n ** 4 * (V - self.V_K)
         self.I_Na = lambda V, m, h : self.g_Na * m ** 3 * h * (V - self.V_Na)
         self.I_ion = lambda V, n, m, h : self.I_K(V, n) + self.I_Na(V, m, h) + self.I_L(V)
-    
+
     def I(self, t):
         """Injects a current of inject_current uA/cm^2 between inj_start_time and inj_end_time. """
         return self.inject_current * (self.inj_start_time < t < self.inj_end_time)
 
     def diff_eq(self):
-        """Returns function f such that the differential equations for the basic hodgkin-huxley model can be 
+        """Returns function f such that the differential equations for the basic hodgkin-huxley model can be
         described as x' = f(t, x), where x = [V, n, m, h]."""
         def f(t, x):
             V, n, m, h = x
@@ -123,8 +123,8 @@ class HodgkinHuxley:
         return f
 
     def diff_eq_dynamic(self, c):
-        """Returns function f such that the differential equations for HH with propagation can be described as 
-        x' = f(t, x), where x = [V, W, n, m, h]. Here, W is a substitution variable for dV/dt. The parameter c 
+        """Returns function f such that the differential equations for HH with propagation can be described as
+        x' = f(t, x), where x = [V, W, n, m, h]. Here, W is a substitution variable for dV/dt. The parameter c
         is the propagation speed in cm/ms."""
         def f(t, x):
             V, W, n, m, h = x
@@ -176,7 +176,7 @@ class HodgkinHuxley:
 
         self.results = sol
         return sol
-    
+
     def run_multiple_ap(self, temps):
         """TODO documentatie :))"""
         print(f"Running temps {temps}")
@@ -190,7 +190,7 @@ class HodgkinHuxley:
             t, y = self.solve_model()
             ys[i] = y[:,0]
         return t, ys
-    
+
     def plot_multiple_ap(self, t_min, t_max, num_temps):
         temps = np.linspace(t_min, t_max, num_temps)
         t, ys = self.run_multiple_ap(temps)
@@ -206,12 +206,12 @@ class HodgkinHuxley:
     def solve_dynamic_model(self, h, t, c, quick=False):
         """Solves dynamic model using FE/RK4 with step size h, for time (at least) t.
         The parameter c is the propagation speed in cm/ms.
-        
+
         First determines a guess for dV/dt at t=0, which is V0 * mu where mu is the positive
-        solution of the quadratic equation spc/c^2 * mu^2 - self.tc * mu - 1 = 0. 
+        solution of the quadratic equation spc/c^2 * mu^2 - self.tc * mu - 1 = 0.
         """
-        # Determine good guess for W = dV/dt at t=0. mu is the positive solution of the 
-        # quadratic equation 
+        # Determine good guess for W = dV/dt at t=0. mu is the positive solution of the
+        # quadratic equation
         mu, _ = tools.solve_quadratic(self.spc / c ** 2, - self.tc, -1)
 
         N = np.int(np.ceil(t/h))
@@ -224,10 +224,10 @@ class HodgkinHuxley:
 
         self.results = sol
         return sol
-    
+
     def find_speed(self, c_low, c_high, h, t, n, quick=False):
         """Finds propagation speed by calculating solution for guesses of c. Theoretically, if c was guessed too low
-        the voltage should diverge to +∞, while is c was guessed to high the voltage should diverge to -∞. Therefore, 
+        the voltage should diverge to +∞, while is c was guessed to high the voltage should diverge to -∞. Therefore,
         using bisection we should be able to find the value of c for which the voltage returns to resting potential,
         which is the propagation speed. The unit of c is cm/ms.
 

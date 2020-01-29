@@ -19,8 +19,14 @@ This opens a GUI where parameters can be filled and different experiments can be
 namely the simulation of one action potential, the running of temperature experiments
 and the verification of the model. See the GUI for details.
 
+*Note: if the loading of the screen takes too long, use Ctrl+C and run it again.*
+
+#### animation.py
+Code for running animation. Run to generate animation of action potential.
+
 #### experiments.py
-A class for the temperature experiments.
+A class for the temperature experiments. This class is a child of the abstract parameter experiment class.
+This class allows to test the effect of changing any parameter on AP duration.
 
 #### gui.py
 Code for generating the GUI.
