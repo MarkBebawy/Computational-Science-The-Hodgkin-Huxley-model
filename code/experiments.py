@@ -241,7 +241,7 @@ class ParamExperiment:
         ly = np.log(y)
 
         # By assumption log(y) = n log(x) + log(c)
-        coefs = np.polyfit(x,y)
+        coefs = np.polyfit(x,y,1)
         
         # Return n, c
         return coefs[0], np.exp(coefs[1])
@@ -309,6 +309,7 @@ if __name__ == "__main__":
     model.run_time=30
     model.num_method_time_steps=0.001
     TE=TempExperiment(model=model)
-    TE.run(num_expr=8)
-    TE.store_csv("testfile")
+    #TE.run(num_expr=8)
+    TE.load_csv("testfile")
     TE.plot(poly_range=[1,2,3,4,5])
+    print(TE.fit_degree())
