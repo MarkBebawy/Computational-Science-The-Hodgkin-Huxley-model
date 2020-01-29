@@ -20,7 +20,11 @@ namely the simulation of one action potential, the running of temperature experi
 and the verification of the model. See the GUI for details.
 
 #### experiments.py
-A class for the temperature experiments.
+A class for the temperature experiments. This class is a child of the abstract parameter experiment class.
+This class allows to test the effect of changing any parameter on AP duration.
+
+## animation.py
+Code for running animation. Run to generate animation of action potential.
 
 #### gui.py
 Code for generating the GUI.
