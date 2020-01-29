@@ -204,10 +204,10 @@ def sim_AP(entries_gen, entries_op1):
 
         # Set parameters
         model.set_num_method(bool(int(entries_gen['quick'].get())), float(entries_gen['num_method_steps'].get()))
-        model.set_injection_data(float(entries_op1['inj_current'].get()), int(entries_op1['inj_start'].get()),
-                                int(entries_op1['inj_end'].get()))
+        model.set_injection_data(float(entries_op1['inj_current'].get()), float(entries_op1['inj_start'].get()),
+                                float(entries_op1['inj_end'].get()))
         model.set_temperature(float(entries_op1['temp'].get()))
-        model.set_run_time(int(entries_op1['run_time1'].get()))
+        model.set_run_time(float(entries_op1['run_time1'].get()))
 
         # Simulate model and show plot.
         model.solve_model()
@@ -254,8 +254,8 @@ def sim_temp(entries_gen, entries_op2):
                                 model, curr_params)
         curr_params.set_curr_data(float(entries_op2['inj_mean'].get()), float(entries_op2['inj_var'].get()),
                                 float(entries_op2['dur_mean'].get()), float(entries_op2['dur_var'].get()),
-                                int(entries_op2['i_start_time'].get()))
-        model.set_run_time(int(entries_op2['run_time2'].get()))
+                                float(entries_op2['i_start_time'].get()))
+        model.set_run_time(float(entries_op2['run_time2'].get()))
         file_path = str(entries_op2['file_name'].get())
 
         # Simulate model and show plot.
@@ -291,7 +291,7 @@ def plot_temp(entries_gen, entries_op2):
     # Load results from csv file and plot figure.
     temp_exp = expy.TempExperiment()
     temp_exp.load_csv(file_path)
-    temp_exp.plot()
+    temp_exp.plot(title="Duration of action potential plotted against temperature.")
     print("------------------------------------------------------")
 
 
@@ -306,7 +306,7 @@ def mainloop():
     tk.Button(screen, text='Quit', command=quit).pack(side=tk.LEFT, padx=5, pady=5)
     tk.Button(screen, text='Option 1\nSimulate action potential',
         command=(lambda e1=entries_gen, e2=entries_op1: sim_AP(e1, e2))).pack(side=tk.LEFT, padx=5, pady=5)
-    tk.Button(screen, text='Option 2\nRun and plot temperature experiments',
+    tk.Button(screen, text='Option 2\nRun and plot temperature experiments\n(and save results)',
         command=(lambda e1=entries_gen, e2=entries_op2: sim_temp(e1, e2))).pack(side=tk.LEFT, padx=5, pady=5)
     tk.Button(screen, text='Option 2\nPlot temperature experiments',
         command=(lambda e1=entries_gen, e2=entries_op2: plot_temp(e1, e2))).pack(side=tk.LEFT, padx=5, pady=5)

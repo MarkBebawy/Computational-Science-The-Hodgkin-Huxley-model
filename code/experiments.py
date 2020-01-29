@@ -42,7 +42,7 @@ class CurrentParameters:
         assert Ivar >= 0
         assert Tmean >= 0
         assert Tvar >= 0
-        assert start_time >= 0
+        assert start >= 0
 
         self.Imean = Imean
         self.Ivar = Ivar
