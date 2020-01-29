@@ -135,9 +135,9 @@ def setup_start(screen):
                     ('run_time1', '20', 'Run time (miliseconds, interval (0, 100])')]
     settings_op2 = [('inj_mean', '20', 'Mean current strength (uA/cm^2), in interval [0, 150]'),
                     ('inj_var', '0', 'Variance of current strength, in interval [0, 50]'),
-                    ('dur_mean', '1', 'Mean duration, in interval [0, 100]'),
+                    ('dur_mean', '1', 'Mean duration (ms), in interval [0, 100]'),
                     ('dur_var', '0', 'Variance for duration, in interval [0, 50]'),
-                    ('i_start_time', '0', 'Start time for current injection'),
+                    ('i_start_time', '0', 'Start time for current injection (ms)'),
                     ('min_temp', '6.3', 'Minimum temperature (celsius, interval [-60, 60])'),
                     ('max_temp', '46.3', 'Maximum temperature (celsius, interval [-60, 60])'),
                     ('temp_steps', '10', 'Amount of experiments points in\ntemperature range, integer between 1 and 100'),
