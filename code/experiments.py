@@ -22,17 +22,7 @@ class CurrentParameters:
         - Tvar: time variance
         - start_time: starting injection time
         """
-        assert Imean >= 0
-        assert Ivar >= 0
-        assert Tmean >= 0
-        assert Tvar >= 0
-        assert start_time >= 0
-
-        self.Imean = Imean
-        self.Ivar = Ivar
-        self.Tmean = Tmean
-        self.Tvar = Tvar
-        self.start_time = start_time
+        self.set_curr_data(Imean, Ivar, Tmean, Tvar, start_time)
 
     def genCurrent(self):
         """Return a current function with normally distributed time and strength."""
@@ -48,6 +38,12 @@ class CurrentParameters:
 
     def set_curr_data(self, Imean, Ivar, Tmean, Tvar, start):
         """Setter for all instance variables."""
+        assert Imean >= 0
+        assert Ivar >= 0
+        assert Tmean >= 0
+        assert Tvar >= 0
+        assert start_time >= 0
+
         self.Imean = Imean
         self.Ivar = Ivar
         self.Tmean = Tmean
@@ -57,9 +53,11 @@ class CurrentParameters:
 class ParamExperiment:
     """Experiment class that tests the effect of a given paramter on action potential duration.
         Makes use of normally distributed current."""
-    def __init__(self,update_param, min_param=6.3, max_param=46.3, param_steps=10, model=hh.HodgkinHuxley(), tol=0.5, currentPar=None):
+    def __init__(self, update_param, min_param=6.3, max_param=46.3, param_steps=10, model=hh.HodgkinHuxley(), tol=0.5, currentPar=None):
         """Initialize values used experiment.
         Parameters:
+        - update_param:
+            function that updates the desired paramater (takes HodgkinHuxley and param value)
         - min_param, max_param, param_steps:
             Used for parameter range in which to test.
         - model:
@@ -68,9 +66,7 @@ class ParamExperiment:
             tolerance used to distinguish from resting potential.
             We consider the range [-tol, +tol] to be resting potential
         - currentPar:
-            class containing current injection parameters.
-        - update_param:
-            function that updates the desired paramater (takes HodgkinHuxley and param value)"""
+            class containing current injection parameters."""
         self.min_param = min_param
         self.max_param = max_param
         self.update_param = update_param
@@ -299,28 +295,3 @@ class TempExperiment(ParamExperiment):
                      f"{self.currentPar.Ivar} and {self.currentPar.Tvar} respectively.")
 
         super().plot( title=title, xlabel=xlabel, ylabel=ylabel, poly_range=poly_range)
-
-
-if __name__ == "__main__":
-    # def update_func(model, value):
-    #     model.m0 = value
-    #     #model.update_parameters()
-    # model = hh.HodgkinHuxley()
-    # model.quick=True
-    # model.run_time=100
-    # model.num_method_time_steps=0.001
-    # PE = ParamExperiment(update_param=update_func, min_param=0.01, max_param=0.1, param_steps=10, model=model)
-    # PE.run(num_expr=2)
-    # PE.store_csv()
-    # poly = PE.fit_poly(5)
-    # PE.plot()
-
-    model = hh.HodgkinHuxley()
-    model.quick=True
-    model.run_time=30
-    model.num_method_time_steps=0.001
-    TE=TempExperiment(model=model)
-    #TE.run(num_expr=8)
-    TE.load_csv("testfile")
-    TE.plot(poly_range=[1,2,3,4,5])
-    print(TE.fit_degree())

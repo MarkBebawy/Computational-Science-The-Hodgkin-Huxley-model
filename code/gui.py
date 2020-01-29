@@ -26,7 +26,7 @@ class Validation:
 
     def num_method_steps_val(value):
         """This function validates the input of the size of time steps for numerical method entry."""
-        return Validation.is_float(value) and 0 < float(value) and float(value) <= 10
+        return Validation.is_float(value) and 0 < float(value) and float(value) <= 1
 
     ## Option 1
     def inj_current_val(value):
@@ -35,11 +35,11 @@ class Validation:
 
     def inj_start_val(value):
         """This function validates the input of the start time current injection entry."""
-        return value.isdigit() and 0 <= int(value)
+        return Validation.is_float() and 0 <= float(value)
 
     def inj_end_val(value):
         """This function validates the input of the end time for current injection entry."""
-        return value.isdigit() and 0 <= int(value)
+        return Validation.is_float() and 0 <= float(value)
 
     def temp_val(value):
         """This function validates the temperature entry."""
@@ -47,7 +47,7 @@ class Validation:
 
     def run_time1_val(value):
         """This function validates the run time entry."""
-        return value.isdigit() and 0 < int(value) and int(value) <= 100
+        return Validation.is_float() and 0 < float(value) and float(value) <= 100
 
     ## Option 2
     def min_temp_val(value):
@@ -68,7 +68,7 @@ class Validation:
 
     def run_time2_val(value):
         """This function validates the input of the run time (option 2) entry."""
-        return value.isdigit() and 0 < int(value) and int(value) <= 50
+        return Validation.is_float() and 0 < float(value) and float(value) <= 50
 
     def inj_mean_val(value):
         """This function validates the input of the mean injection current strength."""
@@ -88,7 +88,7 @@ class Validation:
 
     def i_start_time_val(value):
         """This function validates the input of the injection start time."""
-        return value.isdigit() and 0 <= int(value)
+        return Validation.is_float() and 0 <= float(value)
 
     def num_exps_val(value):
         """This function validates the input of the number of experiment iterations."""
@@ -127,21 +127,21 @@ def setup_start(screen):
     widgets."""
     # Strings, keys and default values for all fields.
     settings_general = [('quick', '1', 'Numerical method (RK4=0, Forw. Euler=1)'),
-                        ('num_method_steps', '0.001', 'Size of time steps for\nnumerical method (in interval (0, 10])')]
-    settings_op1 = [('inj_current', '20', 'Amount of injected current (range 0 - 150)'),
-                    ('inj_start', '3', 'Start time for current injection'),
-                    ('inj_end', '4', 'End time for current injection'),
+                        ('num_method_steps', '0.001', 'Size of time steps for\nnumerical method (in interval (0, 1])')]
+    settings_op1 = [('inj_current', '20', 'Amount of injected current in uA/cm^2 (range 0 - 150)'),
+                    ('inj_start', '3', 'Start time for current injection (ms)'),
+                    ('inj_end', '4', 'End time for current injection (ms)'),
                     ('temp', '6.3', 'Temperature (degrees celsius, interval [-60, 60])'),
                     ('run_time1', '20', 'Run time (miliseconds, interval (0, 100])')]
-    settings_op2 = [('inj_mean', '20', 'Mean current strength, in interval [0, 150]'),
+    settings_op2 = [('inj_mean', '20', 'Mean current strength (uA/cm^2), in interval [0, 150]'),
                     ('inj_var', '0', 'Variance of current strength, in interval [0, 50]'),
-                    ('dur_mean', '1', 'Mean duration'),
+                    ('dur_mean', '1', 'Mean duration, in interval [0, 100]'),
                     ('dur_var', '0', 'Variance for duration, in interval [0, 50]'),
                     ('i_start_time', '0', 'Start time for current injection'),
                     ('min_temp', '6.3', 'Minimum temperature (celsius, interval [-60, 60])'),
                     ('max_temp', '46.3', 'Maximum temperature (celsius, interval [-60, 60])'),
                     ('temp_steps', '10', 'Amount of experiments points in\ntemperature range, integer between 1 and 100'),
-                    ('rest_pot_eps', '10', 'Tolerance for resting potential, interval (0, 15]'),
+                    ('rest_pot_eps', '5', 'Tolerance for resting potential, interval (0, 15]'),
                     ('num_exps', '3', 'Number of iterations per temperature, integer in [1, 30]'),
                     ('run_time2', '10', 'Run time per experiment (miliseconds, interval (0, 50])'),
                     ('file_name', '', ('File name to store/load results (empty: no results saved)\n'
