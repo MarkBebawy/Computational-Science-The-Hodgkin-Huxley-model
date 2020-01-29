@@ -1,4 +1,4 @@
-RECOMENDED: Read the instructions in the 'Code review instructions' section in the README on
+RECOMMENDED: Read the instructions in the 'Code review instructions' section in the README on
 https://github.com/MarkBebawy/PCS
 
 Code review instructions

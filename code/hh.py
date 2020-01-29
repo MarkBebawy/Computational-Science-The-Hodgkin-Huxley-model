@@ -113,6 +113,7 @@ class HodgkinHuxley:
         """Returns function f such that the differential equations for the basic hodgkin-huxley model can be
         described as x' = f(t, x), where x = [V, n, m, h]."""
         def f(t, x):
+            assert len(x) == 4
             V, n, m, h = x
             y = np.zeros(4)
             y[0] = (self.I(t) - self.I_ion(V, n, m, h)) / self.C_m
@@ -127,6 +128,7 @@ class HodgkinHuxley:
         x' = f(t, x), where x = [V, W, n, m, h]. Here, W is a substitution variable for dV/dt. The parameter c
         is the propagation speed in cm/ms."""
         def f(t, x):
+            assert len(x) == 5
             V, W, n, m, h = x
             y = np.zeros(5)
             y[0] = W
@@ -178,7 +180,7 @@ class HodgkinHuxley:
         return sol
 
     def run_multiple_ap(self, temps):
-        """TODO documentatie :))"""
+        """Runs multiple action potentials at temperatures in temps and returns the result as matrix."""
         print(f"Running temps {temps}")
         N = np.int(np.ceil(self.run_time/self.num_method_time_steps))
         num = len(temps)
@@ -192,6 +194,7 @@ class HodgkinHuxley:
         return t, ys
 
     def plot_multiple_ap(self, t_min, t_max, num_temps):
+        """Plots multiple action potentials, calls upon run_multiple_ap to calculate values."""
         temps = np.linspace(t_min, t_max, num_temps)
         t, ys = self.run_multiple_ap(temps)
         for i, y in enumerate(ys):

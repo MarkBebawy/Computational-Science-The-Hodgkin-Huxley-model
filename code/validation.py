@@ -59,8 +59,7 @@ class ValidationExperiment:
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
 
-        # Make point above a certain value green.
-        # This helps illustrate the jump.
+        # Make point above a certain value green. This helps illustrate the jump.
         cutoff = 40
         colorvec = ['green' if val > cutoff else 'red' for val in maxima]
         plt.scatter(current_range, maxima, c=colorvec)

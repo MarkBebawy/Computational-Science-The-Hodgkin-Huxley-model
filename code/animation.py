@@ -44,8 +44,7 @@ class Animation:
         plt.show()
 
     def frame_function(self, i):
-        """Function used in FuncAnimation.
-        Returns tuple with line to be plotted."""
+        """Function used in FuncAnimation. Returns tuple with line to be plotted."""
         x_data, y_data = self.frames[i]
         assert len(x_data) == len(y_data)
         self.ln.set_xdata(x_data)

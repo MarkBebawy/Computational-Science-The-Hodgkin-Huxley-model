@@ -261,7 +261,7 @@ class ParamExperiment:
 
 class TempExperiment(ParamExperiment):
     """Class for an experiment measuring the effect of Temperature of action potential duration.
-    Uses Hodgekin Huxely model of a neuron and measures a single action potential at a time.
+    Uses Hodgkin-Huxley model of a neuron and measures a single action potential at a time.
     Has file management functions and a plot function."""
     def __init__(self, min_temp=6.3, max_temp=46.3, temp_steps=10, model=hh.HodgkinHuxley(), tol=0.5, currentPar=None):
         """Initialize values used experiment.
