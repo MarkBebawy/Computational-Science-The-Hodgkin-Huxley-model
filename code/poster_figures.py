@@ -9,7 +9,7 @@ import numpy as np
 
 ### SIMULATION OF MODEL FOR MULTIPLE TEMPS
 # model = hh.HodgkinHuxley()
-# curr_params = expy.CurrentParameters()        
+# curr_params = expy.CurrentParameters()
 # temp_exp = expy.TempExperiment()
 
 # # Set parameters2
@@ -61,5 +61,4 @@ plt.xlabel("T (°C)")
 plt.ylim((0, 20))
 plt.axvline(ts[47], linestyle=':', color='red')
 plt.legend()
-# plt.show()
-
+plt.show()
