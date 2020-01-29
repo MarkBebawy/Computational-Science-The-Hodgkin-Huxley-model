@@ -1,3 +1,5 @@
+## Functions to generate figures used in report.
+
 import hh
 import experiments as expy
 import validation as vali
@@ -7,59 +9,80 @@ import csv
 import matplotlib.pyplot as plt
 import numpy as np
 
-### SIMULATION OF MODEL FOR MULTIPLE TEMPS
-# model = hh.HodgkinHuxley()
-# curr_params = expy.CurrentParameters()        
-# temp_exp = expy.TempExperiment()
+def multiple_ap_plot():
+    """Plots 5 action potentials using our standard parameters at temperatures 
+    from 15 to 45 degrees Celcius."""
+    x = hh.HodgkinHuxley()
+    x.set_run_time(2.5)
+    x.plot_multiple_ap(15, 45, 5)
 
-# # Set parameters2
-# temp_exp.set_temp_exp_data(0, 60, 100, 1, model, curr_params)
-# curr_params.set_curr_data(50, 0, 1, 0, 0)
-# model.set_run_time(20)
+def large_temp_exp():
+    """Runs large temperature with 100 tests and stores result (this can also be done with the GUI but
+    this does not store results)"""
+    model = hh.HodgkinHuxley()
+    curr_params = expy.CurrentParameters()        
+    temp_exp = expy.TempExperiment()
 
-# # Simulate model and show plot.
-# temp_exp.run(1)
-# temp_exp.store_csv("results_100_deter_1.csv")
-# temp_exp.plot()
+    # Test temperatures between 5 and 45 degrees. Test 100 temperatures,
+    # with 1 test per temperature (since experiment is deterministic)
+    temp_exp.set_temp_exp_data(5, 45, 100, 1, model, curr_params)
 
-### LOAD RESULTS AND SHOW
-file_name = "results_100_deter_1.csv"
-assert os.path.isfile(file_name)
+    # Inject 50 nA/cm^2, starting at t=0, for 1ms, with no variance. 
+    curr_params.set_curr_data(50, 0, 1, 0, 0)
+    model.set_run_time(20)
 
-ts = []
-ys = []
+    # Simulate model and show plot.
+    temp_exp.run(1)
+    temp_exp.store_csv("results_100_deter_1.csv")
 
-with open(file_name, newline='') as csvfile:
-    reader = csv.reader(csvfile)
-    for row in reader:
-        ts.append(float(row[0]))
-        ys.append(float(row[1]))
 
-# tot de 48ste gaat ie omlaat
-ts = ts[7:77]
-ys = ys[7:77]
+def plot_temp_exp_polyfit():
+    """Load results from large temperature experiment and show."""
+    # Read out file
+    file_name = "results_100_deter_1.csv"
+    assert os.path.isfile(file_name)
+    ts = []
+    ys = []
+    with open(file_name, newline='') as csvfile:
+        reader = csv.reader(csvfile)
+        for row in reader:
+            ts.append(float(row[0]))
+            ys.append(float(row[1]))
 
-ts_interp = ts[:48]
-ys_interp = ys[:48]
-z2 = np.polyfit(ts_interp, ys_interp, 2)
-z3 = np.polyfit(ts_interp, ys_interp, 3)
-z4 = np.polyfit(ts_interp, ys_interp, 4)
-p2 = np.poly1d(z2)
-p3 = np.poly1d(z3)
-p4 = np.poly1d(z4)
+    # Find first index where graph stops decreasing
+    ind_fit = 0
+    y_prev = 1000
+    for i, y in enumerate(ys):
+        if y > y_prev:
+            ind_fit = i
+            break
+        y_prev = y
+    assert ind_fit > 0
 
-print("MS2: ", np.mean(np.square(ys_interp - p2(ts_interp))))
-print("MS3: ", np.mean(np.square(ys_interp - p3(ts_interp))))
-print("MS4: ", np.mean(np.square(ys_interp - p4(ts_interp))))
+    # Fit degree 2 and 3 polynomial through the points where the graph
+    # is decreasing
+    ts_interp = ts[:ind_fit]
+    ys_interp = ys[:ind_fit]
+    print(ys_interp)
+    print(ys[ind_fit])
+    z2 = np.polyfit(ts_interp, ys_interp, 2)
+    z3 = np.polyfit(ts_interp, ys_interp, 3)
+    p2 = np.poly1d(z2)
+    p3 = np.poly1d(z3)
 
-plt.scatter(ts, ys, label="datapoints")
-plt.plot(ts, p2(ts), label="Quadratic fit: $0.022T^2 - 1.33T + 22.6$", color='green', linestyle='-.')
-plt.plot(ts, p3(ts), label="Cubic fit: $-0.0013T^3 + 0.095T^2 - 2.5T + 27.8$", color='black', linestyle='-.')
-plt.title("Duration of action potential for 70 temperatures between 0 and 45 degrees Celcius\nwith injected current of 50 $\mu$A/cm$^2$.")
-plt.ylabel("t (ms)")
-plt.xlabel("T (°C)")
-plt.ylim((0, 20))
-plt.axvline(ts[47], linestyle=':', color='red')
-plt.legend()
-# plt.show()
+    # Generate scatterplot with correct labels
+    plt.scatter(ts, ys, label="Data points")
+    plt.plot(ts, p2(ts), label="Quadratic fit", color='green', linestyle='-.')
+    plt.plot(ts, p3(ts), label="Cubic fit", color='black', linestyle='-.')
+    plt.title("Duration of action potential for 100 temperatures between 0 and 45 "\
+            "degrees Celcius\nwith injected current of 50 $\mu$A/cm$^2$.")
+    plt.ylabel("t (ms)")
+    plt.xlabel("T (°C)")
+    plt.ylim((0, 20))
+    plt.axvline(ts[ind_fit], linestyle=':', color='red')
+    plt.legend()
+    plt.show()
 
+if __name__ == "__main__":
+    multiple_ap_plot()
+    plot_temp_exp_polyfit()
