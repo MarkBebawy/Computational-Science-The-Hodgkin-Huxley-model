@@ -234,7 +234,7 @@ class ParamExperiment:
 
         # Take log and return if 0
         if 0 in x or 0 in y:
-            return 
+            return 0,0
         x = np.array(x)
         y = np.array(y)
         lx = np.log(x)
