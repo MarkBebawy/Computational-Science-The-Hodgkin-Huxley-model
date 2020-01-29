@@ -1,5 +1,6 @@
-## TempExperiment class for running temperature experiments, using
-## current injection parameters from CurrentParameters class.
+## ParamExperiment class for running experiments by changing
+## a certain parameter, using current injection parameters
+## from CurrentParameters class.
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -9,26 +10,26 @@ import os
 
 class CurrentParameters:
     """Object to store parameters of and generate a normally distributed current function.
-    This function returns the strength for certain duration and 0 after that. 
-    The Strength (I) and duration (T) are both normally distributed."""
+    This current function returns the strength from a start time for certain duration and
+    returns 0 outside that interval. The current strength (I) and duration (T) are both
+    normally distributed."""
     def __init__(self, Imean = 20, Ivar = 3, Tmean = 1, Tvar = 0.5, start_time=0):
         """Store current paramters in object.
         Parameters:
         - Imean: mean current strength,
         - Ivar: variance of current strength,
-        - Tmean: mean time,
+        - Tmean: mean injection time,
         - Tvar: time variance
+        - start_time: starting injection time
         """
-        self.Imean = Imean
-        self.Ivar = Ivar
-        self.Tmean = Tmean
-        self.Tvar = Tvar
-        self.start_time = start_time
+        self.set_curr_data(Imean, Ivar, Tmean, Tvar, start_time)
 
     def genCurrent(self):
         """Return a current function with normally distributed time and strength."""
         strength = np.random.normal(self.Imean, self.Ivar)
         duration = np.random.normal(self.Tmean, self.Tvar)
+
+        # Only allow non-negative strength and duration.
         strength = max(strength, 0)
         duration = max(duration, 0)
         def I(t):
@@ -37,6 +38,12 @@ class CurrentParameters:
 
     def set_curr_data(self, Imean, Ivar, Tmean, Tvar, start):
         """Setter for all instance variables."""
+        assert Imean >= 0
+        assert Ivar >= 0
+        assert Tmean >= 0
+        assert Tvar >= 0
+        assert start_time >= 0
+
         self.Imean = Imean
         self.Ivar = Ivar
         self.Tmean = Tmean
@@ -46,9 +53,11 @@ class CurrentParameters:
 class ParamExperiment:
     """Experiment class that tests the effect of a given paramter on action potential duration.
         Makes use of normally distributed current."""
-    def __init__(self,update_param, min_param=6.3, max_param=46.3, param_steps=10, model=hh.HodgkinHuxley(), tol=0.5, currentPar=None):
+    def __init__(self, update_param, min_param=6.3, max_param=46.3, param_steps=10, model=hh.HodgkinHuxley(), tol=0.5, currentPar=None):
         """Initialize values used experiment.
         Parameters:
+        - update_param:
+            function that updates the desired paramater (takes HodgkinHuxley and param value)
         - min_param, max_param, param_steps:
             Used for parameter range in which to test.
         - model:
@@ -57,9 +66,7 @@ class ParamExperiment:
             tolerance used to distinguish from resting potential.
             We consider the range [-tol, +tol] to be resting potential
         - currentPar:
-            class containing current injection parameters.
-        - update_param:
-            function that updates the desired paramater (takes HodgkinHuxley and param value)"""
+            class containing current injection parameters."""
         self.min_param = min_param
         self.max_param = max_param
         self.update_param = update_param
@@ -226,7 +233,7 @@ class ParamExperiment:
         return np.polynomial.Polynomial.fit(x,y,degree)
 
     def fit_degree(self):
-        """Fits formula of form y = c*x^n. 
+        """Fits formula of form y = c*x^n.
         All values must be greater than 0 or None will be returned."""
         # Format results for polynomial fit
         param_range, durations_list = self.results
@@ -247,7 +254,7 @@ class ParamExperiment:
 
         # By assumption log(y) = n log(x) + log(c)
         coefs = np.polyfit(x,y,1)
-        
+
         # Return n, c
         return coefs[0], np.exp(coefs[1])
 
@@ -272,7 +279,7 @@ class TempExperiment(ParamExperiment):
             neuron.set_temperature(value)
         super().__init__(update_func, min_param=min_temp, max_param=max_temp, param_steps=temp_steps, \
             model=model, tol=tol, currentPar=currentPar)
-    
+
     def set_temp_exp_data(self, min_temp, max_temp, steps, eps, model, curr_params):
         """This function sets/updates the temperature experiment variables."""
         self.min_param = min_temp
@@ -293,14 +300,3 @@ class TempExperiment(ParamExperiment):
                      f"{self.currentPar.Ivar} and {self.currentPar.Tvar} respectively.")
 
         super().plot( title=title, xlabel=xlabel, ylabel=ylabel, poly_range=poly_range)
-
-
-if __name__ == "__main__":
-
-    model = hh.HodgkinHuxley()
-    model.quick=True
-    model.run_time=30
-    model.num_method_time_steps=0.001
-    TE=TempExperiment(model=model)
-    TE.run(num_expr=8)
-    TE.plot(poly_range=[1,2,3])

@@ -1,27 +1,34 @@
+## Class Animation for running an animation of an action potential.
+
 import matplotlib.pyplot as plt
 import numpy as np
 import hh
 from matplotlib.animation import FuncAnimation
 
 class Animation:
-    """Class used for matplotlib animation. 
-    Must be provided an array of frames (x_i,y_i). At a frame i, x_i is plotted against y_i."""
+    """Class used for matplotlib animation.
+    Must be provided an array of tuples (x_i,y_i). At a frame i, list y_i is plotted
+    against list x_i."""
     def __init__(self, frames, xlim=(-1,1), ylim = (-1,1), frame_delay=200):
         """Creates animation object.
         Parameters:
         - frames:
-            array with tuples (x,y) where x will be plotted against y.
+            array with tuples (x,y) where y will be plotted against x.
         - (x/y)lim:
             Axis ranges for plotting. Should be (start, end).
         - frame_delay:
-            Time between plots in miliseconds"""
+            Time between plots"""
+        # Assert frame tuples have same length.
+        for (x, y) in frames:
+            assert len(x) == len(y)
+
         self.frames = frames
         self.frame_delay = frame_delay
         self.xlim = xlim
         self.ylim = ylim
 
     def start(self):
-        """Function that start the animation. """
+        """Function that start the animation."""
         fig, ax = plt.subplots()
         ax.set_xlim(self.xlim)
         ax.set_ylim(self.ylim)
@@ -32,13 +39,15 @@ class Animation:
         # Frame range is a list of integers as they will be used to index.
         frame_range = np.arange(len(self.frames))
 
-        animation = FuncAnimation(fig, func=self.frame_function, frames = frame_range, interval=self.frame_delay, repeat = False,blit=True)
+        animation = FuncAnimation(fig, func=self.frame_function, frames=frame_range,
+                                interval=self.frame_delay, repeat=False, blit=True)
         plt.show()
-    
+
     def frame_function(self, i):
         """Function used in FuncAnimation.
         Returns tuple with line to be plotted."""
         x_data, y_data = self.frames[i]
+        assert len(x_data) == len(y_data)
         self.ln.set_xdata(x_data)
         self.ln.set_ydata(y_data)
         return self.ln,
@@ -53,6 +62,7 @@ if __name__ == "__main__":
     # Retrieve data to be plotted.
     t, y = neuron.solve_model()
     volts = y[:,0]
+    assert len(t) == len(y)
     frames = [(t[:n],volts[:n]) for n in range(len(volts))]
 
     # Set plottting limits

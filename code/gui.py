@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import experiments as expy
 import validation as vali
 import hh
+import os
 
 ########### Entry validation functions to assert valid input values ################
 class Validation:
@@ -25,7 +26,7 @@ class Validation:
 
     def num_method_steps_val(value):
         """This function validates the input of the size of time steps for numerical method entry."""
-        return Validation.is_float(value) and 0 < float(value) and float(value) <= 10
+        return Validation.is_float(value) and 0 < float(value) and float(value) <= 1
 
     ## Option 1
     def inj_current_val(value):
@@ -34,11 +35,11 @@ class Validation:
 
     def inj_start_val(value):
         """This function validates the input of the start time current injection entry."""
-        return value.isdigit() and 0 <= int(value)
+        return Validation.is_float() and 0 <= float(value)
 
     def inj_end_val(value):
         """This function validates the input of the end time for current injection entry."""
-        return value.isdigit() and 0 <= int(value)
+        return Validation.is_float() and 0 <= float(value)
 
     def temp_val(value):
         """This function validates the temperature entry."""
@@ -46,7 +47,7 @@ class Validation:
 
     def run_time1_val(value):
         """This function validates the run time entry."""
-        return value.isdigit() and 0 < int(value) and int(value) <= 100
+        return Validation.is_float() and 0 < float(value) and float(value) <= 100
 
     ## Option 2
     def min_temp_val(value):
@@ -67,7 +68,7 @@ class Validation:
 
     def run_time2_val(value):
         """This function validates the input of the run time (option 2) entry."""
-        return value.isdigit() and 0 < int(value) and int(value) <= 50
+        return Validation.is_float() and 0 < float(value) and float(value) <= 50
 
     def inj_mean_val(value):
         """This function validates the input of the mean injection current strength."""
@@ -87,11 +88,15 @@ class Validation:
 
     def i_start_time_val(value):
         """This function validates the input of the injection start time."""
-        return value.isdigit() and 0 <= int(value)
+        return Validation.is_float() and 0 <= float(value)
 
     def num_exps_val(value):
         """This function validates the input of the number of experiment iterations."""
         return value.isdigit() and 1 <= int(value) and int(value) <= 30
+
+    def file_name_val(value):
+        """All strings are valid file names."""
+        return True
 ########### -------------------------- ################
 
 
@@ -122,24 +127,25 @@ def setup_start(screen):
     widgets."""
     # Strings, keys and default values for all fields.
     settings_general = [('quick', '1', 'Numerical method (RK4=0, Forw. Euler=1)'),
-                        ('num_method_steps', '0.0001', 'Size of time steps for\nnumerical method (in interval (0, 10])')]
-    settings_op1 = [('inj_current', '20', 'Amount of injected current (range 0 - 150)'),
-                    ('inj_start', '3', 'Start time for current injection'),
-                    ('inj_end', '4', 'End time for current injection'),
+                        ('num_method_steps', '0.001', 'Size of time steps for\nnumerical method (in interval (0, 1])')]
+    settings_op1 = [('inj_current', '20', 'Amount of injected current in uA/cm^2 (range 0 - 150)'),
+                    ('inj_start', '3', 'Start time for current injection (ms)'),
+                    ('inj_end', '4', 'End time for current injection (ms)'),
                     ('temp', '6.3', 'Temperature (degrees celsius, interval [-60, 60])'),
                     ('run_time1', '20', 'Run time (miliseconds, interval (0, 100])')]
-    settings_op2 = [('inj_mean', '20', 'Mean current strength, in interval [0, 150]'),
+    settings_op2 = [('inj_mean', '20', 'Mean current strength (uA/cm^2), in interval [0, 150]'),
                     ('inj_var', '0', 'Variance of current strength, in interval [0, 50]'),
-                    ('dur_mean', '1', 'Mean duration'),
+                    ('dur_mean', '1', 'Mean duration, in interval [0, 100]'),
                     ('dur_var', '0', 'Variance for duration, in interval [0, 50]'),
                     ('i_start_time', '0', 'Start time for current injection'),
                     ('min_temp', '6.3', 'Minimum temperature (celsius, interval [-60, 60])'),
                     ('max_temp', '46.3', 'Maximum temperature (celsius, interval [-60, 60])'),
                     ('temp_steps', '10', 'Amount of experiments points in\ntemperature range, integer between 1 and 100'),
-                    ('rest_pot_eps', '10', 'Tolerance for resting potential, interval (0, 15]'),
+                    ('rest_pot_eps', '5', 'Tolerance for resting potential, interval (0, 15]'),
                     ('num_exps', '3', 'Number of iterations per temperature, integer in [1, 30]'),
-                    ('run_time2', '10', 'Run time per experiment (miliseconds, interval (0, 50])')]
-
+                    ('run_time2', '10', 'Run time per experiment (miliseconds, interval (0, 50])'),
+                    ('file_name', '', ('File name to store/load results (empty: no results saved)\n'
+                                       'Only enter names of files stored in \'stored_figs/\''))]
     welcome_str = ("Welcome to the Hodgkin-Huxley GUI.\n\nOption 1: One action potential "
         "can be simulated and plotted.\nOption 2: Temperature experiments "
         "can be run.\nModel verification shows model obeys all-or-nothing principle.\n\n"
@@ -238,7 +244,7 @@ def sim_temp(entries_gen, entries_op2):
         print("Running temperature experiments. This could take some time...")
 
         model = hh.HodgkinHuxley()
-        curr_params = expy.CurrentParameters()        
+        curr_params = expy.CurrentParameters()
         temp_exp = expy.TempExperiment()
 
         # Set parameters
@@ -250,9 +256,14 @@ def sim_temp(entries_gen, entries_op2):
                                 float(entries_op2['dur_mean'].get()), float(entries_op2['dur_var'].get()),
                                 int(entries_op2['i_start_time'].get()))
         model.set_run_time(int(entries_op2['run_time2'].get()))
+        file_path = str(entries_op2['file_name'].get())
 
         # Simulate model and show plot.
         temp_exp.run(int(entries_op2['num_exps'].get()))
+
+        # Store results in csv file, if file name specified.
+        if file_path:
+            temp_exp.store_csv("stored_figs/" + file_path)
         temp_exp.plot()
     print("------------------------------------------------------")
 
@@ -263,6 +274,24 @@ def model_verification():
     ver_mod = vali.ValidationExperiment()
     ver_mod.run()
     ver_mod.plot()
+    print("------------------------------------------------------")
+
+
+def plot_temp(entries_gen, entries_op2):
+    """This function plots the temperature experiments and shows a plot,
+    using the parameters enterded by the user."""
+    print("Plotting temperature experiments...")
+
+    # Check if file path exists.
+    file_path = 'stored_figs/' + str(entries_op2['file_name'].get())
+    if not os.path.isfile(file_path):
+        print(f"ERROR: File {file_path} does not exist!")
+        return
+
+    # Load results from csv file and plot figure.
+    temp_exp = expy.TempExperiment()
+    temp_exp.load_csv(file_path)
+    temp_exp.plot()
     print("------------------------------------------------------")
 
 
@@ -277,8 +306,10 @@ def mainloop():
     tk.Button(screen, text='Quit', command=quit).pack(side=tk.LEFT, padx=5, pady=5)
     tk.Button(screen, text='Option 1\nSimulate action potential',
         command=(lambda e1=entries_gen, e2=entries_op1: sim_AP(e1, e2))).pack(side=tk.LEFT, padx=5, pady=5)
-    tk.Button(screen, text='Option 2\nRun temperature experiments',
+    tk.Button(screen, text='Option 2\nRun and plot temperature experiments',
         command=(lambda e1=entries_gen, e2=entries_op2: sim_temp(e1, e2))).pack(side=tk.LEFT, padx=5, pady=5)
+    tk.Button(screen, text='Option 2\nPlot temperature experiments',
+        command=(lambda e1=entries_gen, e2=entries_op2: plot_temp(e1, e2))).pack(side=tk.LEFT, padx=5, pady=5)
     tk.Button(screen, text='Model verification', command=model_verification).pack(side=tk.LEFT, padx=5, pady=5)
     screen.mainloop()
 
