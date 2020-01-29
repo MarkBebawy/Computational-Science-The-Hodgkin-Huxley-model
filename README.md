@@ -21,6 +21,11 @@ and the verification of the model. See the GUI for details.
 
 *Note: if the loading of the screen takes too long, use Ctrl+C and run it again.*
 
+#### Folder 'stored_figs'
+The GUI provides an option to store experiment results in csv files, given
+a file name. All this files are stored in this folder. You should only
+specify the name of the file, and it will automatically be placed in this folder.
+
 #### animation.py
 Code for running animation. Run to generate animation of action potential.
 
@@ -34,8 +39,15 @@ Code for generating the GUI.
 #### hh.py
 Code for implementing the Hodgkin-Huxley model.
 
+#### poster_figures.py
+Code for generating figures used for our poster and for the code review.
+
+#### results_100_deter_1.csv
+File containing data to plot figure for code review.
+
 #### tools.py
-Methods for solving ordinary differential equations (Runge-Kutta 4 and Forward Euler).
+Implementation of methods for solving ordinary differential equations (Runge-Kutta 4 and Forward Euler)
+and for the shooting method to solve a partial differential equation from the HH-model.
 
 #### validation.py
 Code for model verification. This is done by checking if the model obeys
