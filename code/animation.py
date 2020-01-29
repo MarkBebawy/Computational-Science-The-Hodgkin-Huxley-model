@@ -14,7 +14,7 @@ class Animation:
         - (x/y)lim:
             Axis ranges for plotting. Should be (start, end).
         - frame_delay:
-            Time between plots"""
+            Time between plots in miliseconds"""
         self.frames = frames
         self.frame_delay = frame_delay
         self.xlim = xlim
@@ -24,7 +24,7 @@ class Animation:
         """Function that start the animation. """
         fig, ax = plt.subplots()
         ax.set_xlim(self.xlim)
-        ax.set_ylim((self.ylim))
+        ax.set_ylim(self.ylim)
 
         # Generate empty line object needed in frame_function
         self.ln, = ax.plot([],[])
@@ -39,7 +39,6 @@ class Animation:
         """Function used in FuncAnimation.
         Returns tuple with line to be plotted."""
         x_data, y_data = self.frames[i]
-        #print(len(x_data))
         self.ln.set_xdata(x_data)
         self.ln.set_ydata(y_data)
         return self.ln,
@@ -59,7 +58,8 @@ if __name__ == "__main__":
     # Set plottting limits
     y_scaling = 1.2
     xlim = (t[0],t[-1])
-    ylim = (y_scaling*min(volts),y_scaling*max(volts))
+    # The scaling should only mode the y window larger.
+    ylim=(y_scaling*min(0,min(volts)),y_scaling*max(0,max(volts)))
 
     # Start animation
     Ani = Animation(frames=frames, frame_delay=10, xlim = xlim, ylim = ylim)
