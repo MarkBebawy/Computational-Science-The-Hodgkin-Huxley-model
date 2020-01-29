@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 def multiple_ap_plot():
-    """Plots 5 action potentials using our standard parameters at temperatures 
+    """Plots 5 action potentials using our standard parameters at temperatures
     from 15 to 45 degrees Celcius."""
     x = hh.HodgkinHuxley()
     x.set_run_time(2.5)
@@ -20,20 +20,21 @@ def large_temp_exp():
     """Runs large temperature with 100 tests and stores result (this can also be done with the GUI but
     this does not store results)"""
     model = hh.HodgkinHuxley()
-    curr_params = expy.CurrentParameters()        
+    curr_params = expy.CurrentParameters()
     temp_exp = expy.TempExperiment()
 
     # Test temperatures between 5 and 45 degrees. Test 100 temperatures,
     # with 1 test per temperature (since experiment is deterministic)
     temp_exp.set_temp_exp_data(5, 45, 100, 1, model, curr_params)
 
-    # Inject 50 nA/cm^2, starting at t=0, for 1ms, with no variance. 
+    # Inject 50 nA/cm^2, starting at t=0, for 1ms, with no variance.
     curr_params.set_curr_data(50, 0, 1, 0, 0)
     model.set_run_time(20)
 
     # Simulate model and show plot.
     temp_exp.run(1)
     temp_exp.store_csv("results_100_deter_1.csv")
+    plot_temp_exp_polyfit()
 
 
 def plot_temp_exp_polyfit():
@@ -74,13 +75,13 @@ def plot_temp_exp_polyfit():
     plt.scatter(ts, ys, label="Data points")
     plt.plot(ts, p2(ts), label="Quadratic fit", color='green', linestyle='-.')
     plt.plot(ts, p3(ts), label="Cubic fit", color='black', linestyle='-.')
-    plt.title("Duration of action potential for 100 temperatures between 0 and 45 "\
-            "degrees Celcius\nwith injected current of 50 $\mu$A/cm$^2$.")
     plt.ylabel("t (ms)")
     plt.xlabel("T (°C)")
     plt.ylim((0, 20))
     plt.axvline(ts[ind_fit], linestyle=':', color='red')
     plt.legend()
+    plt.title("Duration of action potential for 100 temperatures between 0 and 45 "\
+            "degrees Celcius with injected current of 50 $\mu$A/cm$^2$.", wrap=True)
     plt.show()
 
 if __name__ == "__main__":
