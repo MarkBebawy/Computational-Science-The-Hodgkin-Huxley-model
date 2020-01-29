@@ -288,10 +288,8 @@ def plot_temp(entries_gen, entries_op2):
         print(f"ERROR: File {file_path} does not exist!")
         return
 
-    temp_exp = expy.TempExperiment()
-
-
     # Load results from csv file and plot figure.
+    temp_exp = expy.TempExperiment()
     temp_exp.load_csv(file_path)
     temp_exp.plot()
     print("------------------------------------------------------")
