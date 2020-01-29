@@ -68,7 +68,8 @@ if __name__ == "__main__":
     # Set plottting limits
     y_scaling = 1.2
     xlim = (t[0],t[-1])
-    ylim = (y_scaling*min(volts), y_scaling*max(volts))
+    # The scaling should only mode the y window larger.
+    ylim=(y_scaling*min(0,min(volts)),y_scaling*max(0,max(volts)))
 
     # Start animation
     Ani = Animation(frames=frames, frame_delay=10, xlim = xlim, ylim = ylim)

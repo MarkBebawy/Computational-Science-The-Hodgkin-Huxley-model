@@ -81,21 +81,20 @@ class ParamExperiment:
             self.currentPar = currentPar
 
     def run(self, num_expr=3, savefile=None):
-        """This function runs the Hodgkin-Huxley model for different param_range
+        """This function runs the Hodgkin-Huxley model for different parameter values
         and measures the time it takes to finish a single action potential."""
         param_range = np.linspace(self.min_param, self.max_param, self.param_steps)
         print(f"Running action potential for param_range: {param_range}")
 
-        # durations_list should be a 2d array with multiple values for each paramerature.
+        # durations_list should be a 2d array with multiple values for each parameter.
         durations_list = []
         model = self.model
         rest_pot = model.V_eq
 
-        # Determine AP duration for each paramerature
+        # Determine AP duration for each parameter
         for val in param_range:
             print(f"Running value: {val} ...")
             self.update_param(model, val)
-            #model.update_parameters()
             durations = []
 
             # Run each parameter multiple times, for statistical confidence.
@@ -148,7 +147,7 @@ class ParamExperiment:
             return t[end_index] - t[start_index]
 
     def set_param_exp_data(self, min_param, max_param, steps, eps, model):
-        """This function sets the paramerature experiment variables."""
+        """This function sets the parameter experiment variables."""
         self.min_param = min_param
         self.max_param = max_param
         self.param_steps = steps
@@ -190,7 +189,10 @@ class ParamExperiment:
         plt.show()
 
     def store_csv(self, file_name):
-        """Stores results in csv file."""
+        """Stores results in csv file.
+        File format:
+         - column 0: parameter value
+         - column > 0: AP durations"""
         param_range, durations_list = self.results
         assert len(param_range) == len(durations_list)
         with open(file_name, 'w', newline='') as csvfile:
@@ -199,7 +201,10 @@ class ParamExperiment:
                 writer.writerow([val, *ap])
 
     def load_csv(self, file_name):
-        """Loads results from csv file."""
+        """Loads results from csv file.
+        File format:
+         - column 0: parameter value
+         - column > 0: AP durations"""
         assert os.path.isfile(file_name)
 
         param_range = []
@@ -264,19 +269,19 @@ class TempExperiment(ParamExperiment):
         - minTemp, maxTemp, tempsteps:
             Used for temperature range in which to test.
         - model:
-            model of neuron
+            model of neuron (HodgkinHuxley object)
         - tol:
             tolerance used to distinguish from resting potential.
             Given equilibrium optential Ve, we consider the range [V - tol, V + tol] to be resting potential
         - currentPar:
-            class containing current injection parameters."""
+            object containing current injection parameters."""
         def update_func(neuron, value):
             neuron.set_temperature(value)
         super().__init__(update_func, min_param=min_temp, max_param=max_temp, param_steps=temp_steps, \
             model=model, tol=tol, currentPar=currentPar)
 
     def set_temp_exp_data(self, min_temp, max_temp, steps, eps, model, curr_params):
-        """This function sets the temperature experiment variables."""
+        """This function sets/updates the temperature experiment variables."""
         self.min_param = min_temp
         self.max_param = max_temp
         self.param_steps = steps

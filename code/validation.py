@@ -11,11 +11,13 @@ import csv
 import os
 
 class ValidationExperiment:
+    """Tests the response of a neuron against different injected current strengths.
+    This should look similair to a step function."""
     def __init__(self, current_duration=0.5, current_range=np.linspace(0,60,15), model=hh.HodgkinHuxley()):
         """Initialize validation experiment.
         Paramters:
         - current_duration:
-            time for which current will be injected
+            duration for which current will be injected
         - current_range:
             range of rates at which current is injected. Should be lower than the peak value.
         - model:
@@ -57,7 +59,8 @@ class ValidationExperiment:
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
 
-        # Make positive points green.
+        # Make point above a certain value green.
+        # This helps illustrate the jump.
         cutoff = 40
         colorvec = ['green' if val > cutoff else 'red' for val in maxima]
         plt.scatter(current_range, maxima, c=colorvec)
