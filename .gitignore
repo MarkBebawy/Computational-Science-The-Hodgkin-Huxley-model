@@ -2,7 +2,13 @@ code/test.py
 __pycache__/
 *.pyc
 *.swp
+*.aux
+*.log
+*.out
+*.synctex.gz
+*.toc
 code/test.py
 code/testfile
 code/testval
 code/__pycache__
+ignored/

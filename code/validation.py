@@ -58,7 +58,8 @@ class ValidationExperiment:
         plt.ylabel(ylabel)
 
         # Make positive points green.
-        colorvec = ['green' if val > 0 else 'red' for val in maxima]
+        cutoff = 40
+        colorvec = ['green' if val > cutoff else 'red' for val in maxima]
         plt.scatter(current_range, maxima, c=colorvec)
         plt.show()
 
@@ -88,3 +89,13 @@ class ValidationExperiment:
         assert len(maxima) == len(current_range)
         self.maxima = maxima
         self.current_range = current_range
+
+if __name__ == "__main__":
+    model = hh.HodgkinHuxley(T=26.3)
+    model.run_time=10
+    model.quick=True
+    current_range = np.linspace(0,45,50)
+    VE = ValidationExperiment(model=model, current_range=current_range)
+    #VE.run()
+    VE.load_csv("ignored/validation_test_26_3")
+    VE.plot()
